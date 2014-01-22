@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="tebbe_caleb_ASG1" default="run">
+
+    <target name="clean">
+        <delete dir="build" />
+        <delete dir="dist" />
+    </target>
+
+    <target name="init">
+        <mkdir dir="build/classes"/>
+        <mkdir dir="dist" />
+    </target>
+
+    <target name="compile" depends="init" >
+        <javac destdir="build/classes" srcdir="src" includeantruntime="false"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="dist\tebbe_caleb_ASG1.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="cs455.overlay.Main.Main" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java jar="dist\tebbe_caleb_ASG1.jar" fork="true"/>
+    </target>
+</project>
