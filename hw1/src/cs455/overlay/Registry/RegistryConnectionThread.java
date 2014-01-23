@@ -8,6 +8,7 @@ public class RegistryConnectionThread extends Thread {
     private int id = -999;
     private DataInputStream streamIn = null;
     private DataOutputStream streamOut = null;
+    private boolean stop = false;
     public int getID() { return this.id; }
 
     public RegistryConnectionThread(Registry registry, Socket socket) {
@@ -19,10 +20,10 @@ public class RegistryConnectionThread extends Thread {
 
     public void run() {
         System.out.println("registry thread id:"+this.id+" started.");
-        while(true) {
-            try {
+        while(!stop) {
+            //try {
                 //registry.handleNodeMessage(getID(), streamIn.readUTF());
-            } catch(IOException ioe) { handleIOException(ioe); }
+            //} catch(IOException ioe) { handleIOException(ioe); }
         }
     }
 
@@ -49,6 +50,7 @@ public class RegistryConnectionThread extends Thread {
     private void handleIOException(IOException ioe) {
         System.out.println("ERROR: id:"+this.id+". Error:"+ioe.getMessage());
         // registry.remove(ID);
-        stop();
+        shutdown();
     }
+    public void shutdown() { stop = true; }
 }
