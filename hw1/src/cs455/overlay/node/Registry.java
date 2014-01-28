@@ -1,14 +1,14 @@
-//package cs455.overlay.node;
-//import cs455.overlay.wireformats.Event;
+package cs455.overlay.node;
+import cs455.overlay.transport.*;
 import java.io.*;
 import java.net.*;
 
-public class Registry implements Runnable { //implements Node {
+public class Registry implements Runnable, Node { //implements Node {
     /*public void onEvent(Event event) {
     }*/
 
     private ServerSocket serverSocket = null;
-    private TCPReceiverThread receiver = null;
+    private TCPServerThread serverThread = null;
     private TCPSender sender = null;
     private int port = Integer.MAX_VALUE;
 
@@ -22,6 +22,10 @@ public class Registry implements Runnable { //implements Node {
         } catch(IOException ioe) {
             display(ioe.toString());
         }
+    }
+
+    public void onEvent(String s) {
+        display(s);
     }
 
     private void display(String str) {
@@ -38,9 +42,9 @@ public class Registry implements Runnable { //implements Node {
             try {
                 Socket socket = serverSocket.accept();
                 while(socket.isConnected()) {
-                    receiver = new TCPReceiverThread(socket);
+                    serverThread = new TCPServerThread(this, socket);
                     sender = new TCPSender(socket);
-                    receiver.start();
+                    serverThread.start();
                     String str = "msg from server";
                     sender.sendData(str.getBytes());
                 }
@@ -60,5 +64,10 @@ public class Registry implements Runnable { //implements Node {
         registry = new Registry(port);
         Thread thread = new Thread(registry);
         thread.start();
+        try {
+            thread.sleep(1000);
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        }
     }
 }

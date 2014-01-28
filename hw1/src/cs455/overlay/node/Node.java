@@ -1,6 +1,4 @@
-//package cs455.overlay.node;
-//import cs455.overlay.wireformats.Event;
-
+package cs455.overlay.node;
 public interface Node {
-    public void onEvent(Event event);
+    public void onEvent(String str);
 }
