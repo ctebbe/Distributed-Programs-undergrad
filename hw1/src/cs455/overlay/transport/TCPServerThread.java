@@ -2,39 +2,38 @@ package cs455.overlay.transport;
 import cs455.overlay.node.*;
 import java.io.*;
 import java.net.*;
-public class TCPServerThread { //extends Thread {
+public class TCPServerThread { //}extends Thread {
 
-    private Socket socket;
-    private DataInputStream din;
-    private DataOutputStream dout;
+    private ServerSocket serverSocket;
     private Node node;
-    private int ID;
+    private TCPReceiverThread receiver = null;
+    private TCPSender sender = null;
 
-    public TCPServerThread (Node node, Socket socket) throws IOException {
+    public TCPServerThread (Node node, ServerSocket ssocket) throws IOException {
         this.node = node;
-        this.socket = socket;
-        this.ID = socket.getPort();
-        din = new DataInputStream(socket.getInputStream());
-        dout = new DataOutputStream(socket.getOutputStream());
+        this.serverSocket = ssocket;
+        display("Serverthread listening on IP:"+serverSocket.getInetAddress().getLocalHost().toString());
+        display("ServerThread listening on port:"+getPort());
     }
 
     //public void run() {
     public void start() {
-        int dataLen;
-        //while(socket != null) {
-            System.out.println("ServerThread connected on port:"+this.ID);
+        while(serverSocket != null) {
             try {
-                dataLen = din.readInt();
-                byte[] data = new byte[dataLen];
-                din.readFully(data, 0, dataLen);
-                node.onEvent(new String(data));
-            } catch(SocketException se) {
-                System.out.println(se.getMessage());
-                //break;
-            } catch(IOException ioe) {
-                System.out.println(ioe.getMessage());
-                //break;
-            }
-        //}
+                Socket socket = serverSocket.accept();
+                //while(socket.isConnected()) {
+                receiver = new TCPReceiverThread(this.node, socket);
+                sender = new TCPSender(socket);
+
+                receiver.start();
+
+                String str = "msg from serverThread";
+                sender.sendData(str.getBytes());
+                //}
+            } catch(IOException ioe) { display("IOE thrown:"+ioe.getMessage()); }
+        }
     }
+
+    private void display(String s) { System.out.println(s); }
+    public int getPort() { return serverSocket.getLocalPort(); }
 }

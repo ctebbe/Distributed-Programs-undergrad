@@ -3,21 +3,14 @@ import cs455.overlay.transport.*;
 import java.io.*;
 import java.net.*;
 
-public class Registry implements Runnable, Node { //implements Node {
-    /*public void onEvent(Event event) {
-    }*/
+public class Registry implements Node { //implements Runnable {
 
-    private ServerSocket serverSocket = null;
     private TCPServerThread serverThread = null;
-    private TCPSender sender = null;
-    private int port = Integer.MAX_VALUE;
 
     public Registry(int port) {
         try {
-            this.port = port;
-            serverSocket = new ServerSocket(getPort());
-            //display("hostname:"+serverSocket.getInetAddress().getHostName());
-            display("port:"+serverSocket.getLocalPort());
+            //this.port = port;
+            serverThread = new TCPServerThread(this, new ServerSocket(port));
             initialize();
         } catch(IOException ioe) {
             display(ioe.toString());
@@ -28,46 +21,26 @@ public class Registry implements Runnable, Node { //implements Node {
         display(s);
     }
 
-    private void display(String str) {
+    public void display(String str) {
         System.out.println(str);
     }
 
     private void initialize() {
-        //if(connectionListener  == null) connectionListener = new Thread(this);
+        run();
     }
 
     public void run() {
-        display("run()");
-        while(serverSocket != null) {
-            try {
-                Socket socket = serverSocket.accept();
-                while(socket.isConnected()) {
-                    serverThread = new TCPServerThread(this, socket);
-                    sender = new TCPSender(socket);
-                    serverThread.start();
-                    String str = "msg from server";
-                    sender.sendData(str.getBytes());
-                }
-            } catch(IOException ioe) { display("IOE thrown:"+ioe.getMessage()); }
-        }
+        serverThread.start();
     }
 
-    public int getPort() { return this.port; }
+    public int getPort() { return serverThread.getPort(); }
 
     public static void main(String args[]) {
         Registry registry = null;
         int port = 8080; // default port
 
-        if(args.length < 1) System.out.println("No port provided, default to port 8080");
-        else port = Integer.parseInt(args[0]);
+        if(args.length > 0) port = Integer.parseInt(args[0]);
 
         registry = new Registry(port);
-        Thread thread = new Thread(registry);
-        thread.start();
-        try {
-            thread.sleep(1000);
-        } catch (InterruptedException ie) {
-            ie.printStackTrace();
-        }
     }
 }

@@ -4,10 +4,10 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class MessagingNode implements Runnable, Node {
+public class MessagingNode implements Node { // , Runnable
     /*public void onEvent(Event event) {
     }*/
-    private Socket socket = null;
+    private Socket registrySocket = null;
     private TCPReceiverThread receiver = null;
     private TCPSender sender = null;
     private int port = Integer.MAX_VALUE;
@@ -18,11 +18,9 @@ public class MessagingNode implements Runnable, Node {
         try {
             this.port = port;
             this.host = host;
-            socket = new Socket(host, port);
-            sender = new TCPSender(socket);
-            receiver = new TCPReceiverThread(this, socket);
-            //display("hostname:"+serverSocket.getInetAddress().getHostName());
-            //display("port:"+serverSocket.getLocalPort());
+            registrySocket = new Socket(host, port);
+            sender = new TCPSender(registrySocket);
+            receiver = new TCPReceiverThread(this, registrySocket);
             initialize();
         } catch(IOException ioe) {
             display(ioe.toString());
@@ -43,7 +41,7 @@ public class MessagingNode implements Runnable, Node {
 
     public void run() {
         display("run()");
-        while(socket != null) {
+        while(registrySocket != null) {
             try {
                 String input = keyboard.nextLine();
                 while(input != null || !input.equalsIgnoreCase("quit")) {
@@ -59,13 +57,18 @@ public class MessagingNode implements Runnable, Node {
 
     public static void main(String args[]) {
         MessagingNode node = null;
+        String host = "localhost";
         int port = 8080; // default port
+        if(args.length > 0) {
+            host = args[0];
+            port = Integer.parseInt(args[1]);
+        }
 
-        if(args.length < 1) System.out.println("No port provided, default to port 8080");
-        else port = Integer.parseInt(args[0]);
-
-        node = new MessagingNode("localhost", port);
+        node = new MessagingNode(host, port);
+        node.run();
+        /*
         Thread thread = new Thread(node);
         thread.start();
+        */
     }
 }

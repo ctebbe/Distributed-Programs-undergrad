@@ -26,13 +26,21 @@
     <target name="registry" depends="jar">
         <java classname="cs455.overlay.node.Registry" fork="true">
             <classpath path="dist\tebbe_caleb_ASG1.jar" />
-            <arg value="${arg0}"/>
+            <!-- <arg value="${arg0}"/> -->
         </java>
     </target>
 
     <target name="node" depends="jar">
         <java classname="cs455.overlay.node.MessagingNode" fork="true">
             <classpath path="dist\tebbe_caleb_ASG1.jar" />
+        </java>
+    </target>
+
+    <target name="node_args" depends="jar">
+        <java classname="cs455.overlay.node.MessagingNode" fork="true">
+            <classpath path="dist\tebbe_caleb_ASG1.jar" />
+            <arg value="${arg0}"/>
+            <arg value="${arg1}"/>
         </java>
     </target>
 </project>
