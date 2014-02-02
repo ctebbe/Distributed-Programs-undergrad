@@ -41,12 +41,12 @@ public class MessagingNode implements Node { // , Runnable
 
     public void run() {
         display("run()");
+        receiver.start();
         while(registrySocket != null) {
             try {
                 String input = keyboard.nextLine();
                 while(input != null || !input.equalsIgnoreCase("quit")) {
                     sender.sendData(input.getBytes());
-                    receiver.start();
                     input = keyboard.nextLine();
                 }
             } catch(IOException ioe) { display("IOE thrown:"+ioe.getMessage()); }
