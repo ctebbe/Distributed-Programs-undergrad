@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="tebbe_caleb_ASG1" default="jar">
+<project name="t_c_ASG1" default="jar">
 
     <target name="clean">
         <delete dir="build" />
@@ -16,7 +16,7 @@
     </target>
 
     <target name="jar" depends="compile">
-        <jar destfile="dist\tebbe_caleb_ASG1.jar" basedir="build/classes">
+        <jar destfile="dist\t_c_ASG1.jar" basedir="build/classes">
             <manifest>
                 <attribute name="Main-Class" value="cs455.overlay.node.Registry" />
             </manifest>
@@ -25,20 +25,20 @@
 
     <target name="registry" depends="jar">
         <java classname="cs455.overlay.node.Registry" fork="true">
-            <classpath path="dist\tebbe_caleb_ASG1.jar" />
+            <classpath path="dist\t_c_ASG1.jar" />
             <!-- <arg value="${arg0}"/> -->
         </java>
     </target>
 
     <target name="node" depends="jar">
         <java classname="cs455.overlay.node.MessagingNode" fork="true">
-            <classpath path="dist\tebbe_caleb_ASG1.jar" />
+            <classpath path="dist\t_c_ASG1.jar" />
         </java>
     </target>
 
     <target name="node_args" depends="jar">
         <java classname="cs455.overlay.node.MessagingNode" fork="true">
-            <classpath path="dist\tebbe_caleb_ASG1.jar" />
+            <classpath path="dist\t_c_ASG1.jar" />
             <arg value="${arg0}"/>
             <arg value="${arg1}"/>
         </java>
