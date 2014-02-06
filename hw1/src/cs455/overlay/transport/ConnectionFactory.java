@@ -18,6 +18,6 @@ public class ConnectionFactory {
         return new NodeConnection(node, sock);
     }
     public static NodeConnection buildConnection(Node node, String host, int port) throws IOException {
-        return new NodeConnection(node, new Socket(host, port));
+        return buildConnection(node, new Socket(host, port));
     }
 }

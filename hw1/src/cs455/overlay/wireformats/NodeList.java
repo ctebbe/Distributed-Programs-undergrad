@@ -1,22 +1,23 @@
 package cs455.overlay.wireformats;
+import cs455.overlay.transport.*;
 import java.util.*;
 import java.io.*;
-public class RegisterResponse implements Event {
+public class NodeList implements Event {
 
     private Header header = null;
-    private byte status          = Protocol.NOSTATUS; // success or failure status code
-    private String information   = null;              // additional info about success for failure
+    private int numNodes = -1; // number of nodes in overlay
+    private String nodeList;
 
-    public RegisterResponse(Header header, byte status, String info) {
+    public NodeList(Header header, int numNodes, String list) {
         this.header = header;
-        this.status = status;
-        this.information = info;
+        this.numNodes = numNodes;
+        this.nodeList = list;
     }
     public String toString() {
-        return header.toString() + " status:" + getStatus() + " information:" + getInformation();
+        return header.toString() + " numNodes:" + getNumNodes() + " list:" + getNodeList();
     }
 
-    public RegisterResponse(byte[] marshalledBytes) throws IOException {
+    public NodeList(byte[] marshalledBytes) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(marshalledBytes);
         DataInputStream din = new DataInputStream(new BufferedInputStream(bais));
 
@@ -24,13 +25,13 @@ public class RegisterResponse implements Event {
         this.header = Header.parseHeader(din);
 
         // status
-        this.status = din.readByte();
+        this.numNodes = din.readByte();
 
         // info
-        int infoLength = din.readInt();
-        byte[] infoBytes = new byte[infoLength];
-        din.readFully(infoBytes);
-        this.information = new String(infoBytes);
+        int nodeListLength = din.readInt();
+        byte[] listBytes = new byte[nodeListLength];
+        din.readFully(listBytes);
+        this.nodeList = new String(listBytes);
 
         bais.close();
         din.close();
@@ -46,11 +47,11 @@ public class RegisterResponse implements Event {
         //dout.writeInt(headerBytes.length);
         dout.write(headerBytes);
 
-        // status
-        dout.writeByte(getStatus());
+        //  num nodes
+        dout.writeByte(getNumNodes());
 
         // info
-        byte[] infoBytes = getInformation().getBytes();
+        byte[] infoBytes = getNodeList().getBytes();
         dout.writeInt(infoBytes.length);
         dout.write(infoBytes);
 
@@ -67,6 +68,6 @@ public class RegisterResponse implements Event {
     public String getIP() { return this.header.getIP(); }
     public int getPort() { return this.header.getPort(); }
     public String getSenderKey() { return this.header.getSenderKey(); }
-    public byte getStatus() { return this.status; }
-    public String getInformation() { return this.information; }
+    public int getNumNodes() { return this.numNodes; }
+    public String getNodeList() { return this.nodeList; } 
 }

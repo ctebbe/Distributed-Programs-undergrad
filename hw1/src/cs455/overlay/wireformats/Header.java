@@ -49,7 +49,6 @@ public class Header implements Event {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dout = new DataOutputStream(new BufferedOutputStream(baos));
 
-        // header
         // type
         dout.writeInt(getType());
         // IP

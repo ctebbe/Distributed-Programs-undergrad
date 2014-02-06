@@ -17,8 +17,10 @@ public class EventFactory {
         return new Register(Protocol.REGISTER, connection);
     }
     public static Event buildRegisterResponseEvent(NodeConnection connection, byte status, String info) throws IOException {
-        return new Register(Protocol.REGISTER, connection);
-        //return new RegisterResponse(new Header(Protocol.REGISTER_RESPONSE, connection.getSocket()), status, info);
+        return new RegisterResponse(new Header(Protocol.REGISTER_RESPONSE, connection), status, info);
+    }
+    public static Event buildNodeListEvent(NodeConnection connection, int num, String nodes) throws IOException {
+        return new NodeList(new Header(Protocol.MESSAGING_NODES_LIST, connection), num, nodes);
     }
 
     public static Event buildEvent(byte[] marshalledBytes) throws IOException {
@@ -31,6 +33,8 @@ public class EventFactory {
                     return new Register(marshalledBytes);
                 case Protocol.REGISTER_RESPONSE:
                     return new RegisterResponse(marshalledBytes);
+                case Protocol.MESSAGING_NODES_LIST:
+                    return new NodeList(marshalledBytes);
                 default: return null;
             }
         } catch(IOException ioe) { System.out.println(ioe.toString()); }

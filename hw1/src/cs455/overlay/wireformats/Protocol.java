@@ -2,7 +2,7 @@ package cs455.overlay.wireformats;
 public class Protocol {
 
     // message types
-    public static final int NOTYPE                  = -1;
+    public static final int NOTYPE                  = -101;
     public static final int REGISTER                = 100;
     public static final int REGISTER_RESPONSE       = 101;
     public static final int DEREGISTER              = 102;
@@ -20,17 +20,17 @@ public class Protocol {
 
     public static String getProtocolString(int protocol) {
         switch(protocol) {
-            case NOTYPE: return "NOTYPE";
-            case REGISTER: return "REGISTER";
-            case REGISTER_RESPONSE: return "REGISTER_RESPONSE";
-            case DEREGISTER: return "DEREGISTER";
-            case MESSAGING_NODES_LIST: return "";
-            case LINK_WEIGHTS: return "LINK_WEIGHTS";
-            case TASK_INITIATE: return "TASK_INITIATE";
-            case TASK_COMPLETE: return "TASK_COMPLETE";
-            case PULL_TRAFFIC_SUMMARY: return "PULL_TRAFFIC_SUMMARY";
-            case TRAFFIC_SUMMARY: return "TRAFFIC_SUMMARY";
-            default: return "UNKNOWN";
+            case NOTYPE:                return "NOTYPE";
+            case REGISTER:              return "REGISTER";
+            case REGISTER_RESPONSE:     return "REGISTER_RESPONSE";
+            case DEREGISTER:            return "DEREGISTER";
+            case MESSAGING_NODES_LIST:  return "MESSAGING_NODES_LIST";
+            case LINK_WEIGHTS:          return "LINK_WEIGHTS";
+            case TASK_INITIATE:         return "TASK_INITIATE";
+            case TASK_COMPLETE:         return "TASK_COMPLETE";
+            case PULL_TRAFFIC_SUMMARY:  return "PULL_TRAFFIC_SUMMARY";
+            case TRAFFIC_SUMMARY:       return "TRAFFIC_SUMMARY";
+            default:                    return "UNKNOWN";
         }
     }
 }

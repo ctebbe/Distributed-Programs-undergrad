@@ -4,7 +4,7 @@ import cs455.overlay.wireformats.*;
 import java.io.*;
 import java.net.*;
 
-// a class to write data to a connected socket
+// a class to write events to a connected socket
 public class TCPSender {
     private Socket socket;
     private DataOutputStream dout;

@@ -19,7 +19,6 @@ public class TCPReceiverThread extends Thread {
     }
 
     public void run() {
-    //public void start() {
         while(socket != null) {
             try {
                 node.onEvent(EventFactory.getInstance().buildEvent(receiveData()));

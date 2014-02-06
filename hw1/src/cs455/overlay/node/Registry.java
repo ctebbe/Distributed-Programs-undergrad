@@ -32,25 +32,53 @@ public class Registry implements Node { //implements Runnable {
         display("Event:"+event.toString());
         switch(event.getType()) {
             case Protocol.REGISTER:
-                display("Attempting to register node:"+((Register) event).getSenderKey());
+                //display("Attempting to register node:"+((Register) event).getSenderKey());
+                addConnectionToRegistry(getBufferedConnection(((Register) event).getSenderKey()));
                 break;
             default:
                 display("unknown event type.");
         }
     }
 
+
+    // *** REGISTRATION *** 
+
     // buffers incoming connections to wait for a registration request
     public synchronized void registerConnection(NodeConnection connection) {
-        display("buffered new connection. key:"+connection.getHashKey());
+        //display("buffered new connection. key:"+connection.getHashKey());
         connectionBuffer.add(connection);
-        /*try {
-            display("connection key:"+connection.getKey());
-            connectionMap.put(connection.getKey(), connection);
-            connection.sendEvent(
-                eventFactory.buildRegisterResponseEvent(connection, Protocol.SUCCESS, "Successfully connected"));
-            //connection.sendData("Registered");
-        } catch(IOException ioe) { display("Error registering:"+ioe.toString()); }*/
     }
+
+    // performs checks to register a node
+    // sends a REGISTER_RESPONSE event indicating success or failure.
+    private void addConnectionToRegistry(NodeConnection nc) {
+        try {
+            Event response;
+            if(connectionMap.containsKey(nc.getHashKey())) // check if connection already in connectionMap
+                response = eventFactory.buildRegisterResponseEvent(
+                    nc, Protocol.FAILURE, "MessageNode already registered with key:"+nc.getHashKey());
+
+            
+            else { // passed checks, add new connection to connectionMap
+                connectionMap.put(nc.getHashKey(), nc);
+                response = eventFactory.buildRegisterResponseEvent(nc, Protocol.SUCCESS, 
+                    "Register success. Currently "+ connectionMap.size() + " nodes in the overlay.");
+            }
+
+            nc.sendEvent(response);
+
+        } catch(IOException ioe) { display("Error sending regsiter request:"+ioe.toString()); }
+    }
+
+    // finds, removes, and returns a buffered connection with hashKey key
+    private NodeConnection getBufferedConnection(String key) {
+        for(NodeConnection nc : this.connectionBuffer) {
+            if(nc.getHashKey().equals(key)) return connectionBuffer.remove(connectionBuffer.indexOf(nc));
+        }
+        return null;
+    }
+
+    // *** DEREGISTRATION *** 
 
     public void deregisterConnection(NodeConnection connection) {
     }
@@ -61,15 +89,25 @@ public class Registry implements Node { //implements Runnable {
 
     public void run() {
         serverThread.start();
-        //try {
-            // listen for commands from keyboard
-            String input = keyboard.nextLine();
-            while(input != null || !input.equalsIgnoreCase("quit")) {
-                //sender.sendData(input.getBytes());
-                display(input);
-                input = keyboard.nextLine();
-            }
-        //} catch(IOException ioe) { display("IOE thrown:"+ioe.getMessage()); }
+        String input = keyboard.nextLine();
+        while(input != null || !input.equalsIgnoreCase("quit")) {
+            //display(input);
+            if(input.equals("connect")) connectNodes();
+            input = keyboard.nextLine();
+        }
+    }
+
+    private void connectNodes() {
+        NodeConnection[] conn = ((NodeConnection[])connectionMap.values().toArray());
+        String nodes = "";
+        for(NodeConnection nc : conn) {
+            nodes += nc.getHashKey() + "\n"; 
+        }
+        for(NodeConnection nc : conn) {
+            try {
+                nc.sendEvent(eventFactory.buildNodeListEvent(nc, connectionMap.size(), nodes));
+            } catch(IOException ioe) { display("Error sending regsiter request:"+ioe.toString()); }
+        }
     }
 
     public int getPort() { return serverThread.getPort(); }

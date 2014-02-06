@@ -9,6 +9,9 @@ public class Register implements Event {
     public Register(int protocol, NodeConnection connection) {
         header = new Header(protocol, connection);
     }
+    public Register(Header header) {
+        this.header = header;
+    }
 
     public Register(byte[] marshalledBytes) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(marshalledBytes);

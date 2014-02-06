@@ -26,6 +26,8 @@ public class MessagingNode implements Node { // , Runnable
         switch(event.getType()) {
             case Protocol.REGISTER_RESPONSE:
                 display("Register response received:"+event.toString());
+            case Protocol.MESSAGING_NODES_LIST:
+                display("node list received:"+event.toString());
             default:
         }
     }
