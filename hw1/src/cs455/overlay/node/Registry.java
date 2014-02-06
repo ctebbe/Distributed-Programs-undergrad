@@ -29,10 +29,10 @@ public class Registry implements Node { //implements Runnable {
     }
 
     public synchronized void onEvent(Event event) {
+        display("Event:"+event.toString());
         switch(event.getType()) {
             case Protocol.REGISTER:
-                display("Register request received:"+event.toString());
-                display("key:"+((Register)event).getSenderKey());
+                display("Attempting to register node:"+((Register) event).getSenderKey());
                 break;
             default:
                 display("unknown event type.");
@@ -41,7 +41,7 @@ public class Registry implements Node { //implements Runnable {
 
     // buffers incoming connections to wait for a registration request
     public synchronized void registerConnection(NodeConnection connection) {
-        display("buffered connection key:"+connection.getKey());
+        display("buffered new connection. key:"+connection.getHashKey());
         connectionBuffer.add(connection);
         /*try {
             display("connection key:"+connection.getKey());

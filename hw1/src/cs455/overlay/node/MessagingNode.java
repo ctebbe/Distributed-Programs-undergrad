@@ -7,8 +7,7 @@ import java.net.*;
 import java.util.*;
 
 public class MessagingNode implements Node { // , Runnable
-    /*public void onEvent(Event event) {
-    }*/
+
     private NodeConnection connectionRegistry = null;
     private Scanner keyboard = new Scanner(System.in);
 

@@ -14,11 +14,11 @@ public class EventFactory {
     }
 
     public static Event buildRegisterEvent(NodeConnection connection) throws IOException {
-        return new Register(new Header(Protocol.REGISTER, connection.getSocket()));
+        return new Register(Protocol.REGISTER, connection);
     }
     public static Event buildRegisterResponseEvent(NodeConnection connection, byte status, String info) throws IOException {
-        return new RegisterResponse(new Header(Protocol.REGISTER_RESPONSE, connection.getSocket()), 
-            status, info);
+        return new Register(Protocol.REGISTER, connection);
+        //return new RegisterResponse(new Header(Protocol.REGISTER_RESPONSE, connection.getSocket()), status, info);
     }
 
     public static Event buildEvent(byte[] marshalledBytes) throws IOException {
@@ -27,9 +27,9 @@ public class EventFactory {
             DataInputStream din = new DataInputStream(new BufferedInputStream(bais));
 
             switch(din.readInt()) { // read protocol type byte
-                case Protocol.REGISTER: 
+                case Protocol.REGISTER:
                     return new Register(marshalledBytes);
-                case Protocol.REGISTER_RESPONSE: 
+                case Protocol.REGISTER_RESPONSE:
                     return new RegisterResponse(marshalledBytes);
                 default: return null;
             }

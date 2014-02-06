@@ -27,7 +27,7 @@ public class TCPReceiverThread extends Thread {
                 System.out.println("Socket error in receiver thread:"+se.getMessage());
                 break;
             } catch(IOException ioe) {
-                System.out.println("IO Exception in receiver thread:"ioe.getMessage());
+                System.out.println("IO Exception in receiver thread:"+ioe.getMessage());
                 break;
             }
         }

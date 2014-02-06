@@ -15,9 +15,9 @@ public class ConnectionFactory {
     }
 
     public static NodeConnection buildConnection(Node node, Socket sock) throws IOException {
-        return new NodeConnection(node, sock); 
+        return new NodeConnection(node, sock);
     }
     public static NodeConnection buildConnection(Node node, String host, int port) throws IOException {
-        return new NodeConnection(node, new Socket(host, port)); 
+        return new NodeConnection(node, new Socket(host, port));
     }
 }

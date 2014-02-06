@@ -23,21 +23,9 @@ public class TCPServerThread extends Thread {
     }
 
     public void run() {
-    //public void start() {
         while(serverSocket != null) {
             try {
                 connectionFactory.buildConnection(node, serverSocket.accept());
-                display("New node connected.");
-                /*while(socket.isConnected()) {
-            receiver = new TCPReceiverThread(this.node, socket);
-            sender = new TCPSender(socket);
-            receiver.start();
-                    String input = keyboard.nextLine();
-                    while(input != null || !input.equalsIgnoreCase("quit")) {
-                        sender.sendData(input.getBytes());
-                        input = keyboard.nextLine();
-                    }
-                }*/
             } catch(IOException ioe) { display("Error accepting new node connection:"+ioe.getMessage()); }
         }
     }

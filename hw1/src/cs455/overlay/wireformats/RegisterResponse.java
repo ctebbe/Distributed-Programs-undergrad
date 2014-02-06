@@ -79,7 +79,7 @@ public class RegisterResponse implements Event {
     public int getType() { return this.header.getType(); }
     public String getIP() { return this.header.getIP(); }
     public int getPort() { return this.header.getPort(); }
-    public String getSenderKey() { return this.header.getKey(); }
+    public String getSenderKey() { return this.header.getSenderKey(); }
     public byte getStatus() { return this.status; }
     public String getInformation() { return this.information; }
 }

@@ -6,14 +6,16 @@ import java.io.*;
 import java.net.*;
 public class NodeConnection {
 
-    private String key = null;
+    private String hashKey = null;
+    private String eventKey = null;
     private Node node = null;
     private TCPReceiverThread receiver = null;
     private TCPSender sender = null;
     private Socket socket = null;
-    
+
     public NodeConnection(Node node, Socket sock) throws IOException {
-        this.key =  Util.generateKeyFromSocket(sock);
+        this.hashKey =  Util.generateHashKey(sock);
+        this.eventKey = Util.generateEventKey(sock);
         this.node = node;
         this.receiver = new TCPReceiverThread(node, sock);
         this.sender = new TCPSender(sock);
@@ -27,14 +29,15 @@ public class NodeConnection {
         this.sender.sendEvent(event);
     }
 
+    public String getHashKey() { return this.hashKey; }
+    public String getEventKey() { return this.eventKey; }
+    public String toString() { return getHashKey(); }
+
     public boolean equals(Object o) {
         if(o == this) return true;
         if(!(o instanceof NodeConnection)) return false;
 
         NodeConnection nc = (NodeConnection) o;
-        return this.getKey().equals(nc.getKey());
+        return this.getHashKey().equals(nc.getHashKey());
     }
-    public String toString() { return getKey(); }
-    public String getKey() { return this.key; }
-    public Socket getSocket() { return this.socket; }
 }

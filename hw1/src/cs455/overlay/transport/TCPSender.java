@@ -5,7 +5,6 @@ import java.io.*;
 import java.net.*;
 
 // a class to write data to a connected socket
-// it performs its job in one sweep so no need for its own thread
 public class TCPSender {
     private Socket socket;
     private DataOutputStream dout;

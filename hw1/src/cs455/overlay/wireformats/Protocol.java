@@ -17,4 +17,20 @@ public class Protocol {
     public static final byte NOSTATUS               = (byte) 0x00;
     public static final byte SUCCESS                = (byte) 0x01;
     public static final byte FAILURE                = (byte) 0x02;
+
+    public static String getProtocolString(int protocol) {
+        switch(protocol) {
+            case NOTYPE: return "NOTYPE";
+            case REGISTER: return "REGISTER";
+            case REGISTER_RESPONSE: return "REGISTER_RESPONSE";
+            case DEREGISTER: return "DEREGISTER";
+            case MESSAGING_NODES_LIST: return "";
+            case LINK_WEIGHTS: return "LINK_WEIGHTS";
+            case TASK_INITIATE: return "TASK_INITIATE";
+            case TASK_COMPLETE: return "TASK_COMPLETE";
+            case PULL_TRAFFIC_SUMMARY: return "PULL_TRAFFIC_SUMMARY";
+            case TRAFFIC_SUMMARY: return "TRAFFIC_SUMMARY";
+            default: return "UNKNOWN";
+        }
+    }
 }
