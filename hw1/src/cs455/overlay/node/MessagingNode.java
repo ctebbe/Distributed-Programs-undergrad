@@ -1,5 +1,7 @@
 package cs455.overlay.node;
 import cs455.overlay.transport.*;
+import cs455.overlay.wireformats.*;
+import cs455.overlay.util.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -7,42 +9,46 @@ import java.util.*;
 public class MessagingNode implements Node { // , Runnable
     /*public void onEvent(Event event) {
     }*/
-    private Socket registrySocket = null;
-    private TCPReceiverThread receiver = null;
-    private TCPSender sender = null;
-    private int port = Integer.MAX_VALUE;
-    private String host = null;
+    private NodeConnection connectionRegistry = null;
     private Scanner keyboard = new Scanner(System.in);
+
+    // factories
+    private EventFactory eventFactory = EventFactory.getInstance();
+    private ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 
     public MessagingNode(String host, int port) {
         try {
-            this.port = port;
-            this.host = host;
-            registrySocket = new Socket(host, port);
-            sender = new TCPSender(registrySocket);
-            receiver = new TCPReceiverThread(this, registrySocket);
-            initialize();
-        } catch(IOException ioe) {
-            display(ioe.toString());
+            connectionRegistry = connectionFactory.buildConnection(this, new Socket(host, port));
+        } catch(IOException ioe) { display("Error connecting to registry:"+ioe.getMessage()); }
+        register();
+    }
+
+    public void onEvent(Event event) {
+        switch(event.getType()) {
+            case Protocol.REGISTER_RESPONSE:
+                display("Register response received:"+event.toString());
+            default:
         }
     }
 
-    public void onEvent(String s) {
-        display(s);
+    public void registerConnection(NodeConnection connection) {
+    }
+
+    public void deregisterConnection(NodeConnection connection) {
     }
 
     private void display(String str) {
         System.out.println(str);
     }
 
-    private void initialize() {
-        //if(connectionListener  == null) connectionListener = new Thread(this);
+    // attempts to send a register request to the connectionRegistry
+    private void register() {
+        try { connectionRegistry.sendEvent(eventFactory.buildRegisterEvent(connectionRegistry));
+        } catch(IOException ioe) { display("Error sending register request:"+ioe.getMessage()); }
     }
 
     public void run() {
-        display("run()");
-        receiver.start();
-        while(registrySocket != null) {
+        /*while(registrySocket != null) {
             try {
                 String input = keyboard.nextLine();
                 while(input != null || !input.equalsIgnoreCase("quit")) {
@@ -50,15 +56,13 @@ public class MessagingNode implements Node { // , Runnable
                     input = keyboard.nextLine();
                 }
             } catch(IOException ioe) { display("IOE thrown:"+ioe.getMessage()); }
-        }
+        }*/
     }
-
-    public int getPort() { return this.port; }
 
     public static void main(String args[]) {
         MessagingNode node = null;
         String host = "localhost";
-        int port = 8080; // default port
+        int port = 8082; // default port
         if(args.length > 0) {
             host = args[0];
             port = Integer.parseInt(args[1]);

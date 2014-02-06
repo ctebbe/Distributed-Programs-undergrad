@@ -1,3 +1,4 @@
+package cs455.overlay.wireformats;
 import java.util.*;
 import java.io.*;
 public class Deregister implements Event {

@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+// a thread to act as the server spawning new connections to its node
 public class TCPServerThread extends Thread {
 
     private ServerSocket serverSocket;
@@ -11,6 +12,8 @@ public class TCPServerThread extends Thread {
     private TCPReceiverThread receiver = null;
     private TCPSender sender = null;
     private Scanner keyboard = new Scanner(System.in);
+
+    private ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 
     public TCPServerThread (Node node, ServerSocket ssocket) throws IOException {
         this.node = node;
@@ -23,19 +26,19 @@ public class TCPServerThread extends Thread {
     //public void start() {
         while(serverSocket != null) {
             try {
-                Socket socket = serverSocket.accept();
-                display("Accepted new client");
-                receiver = new TCPReceiverThread(this.node, socket);
-                sender = new TCPSender(socket);
-                receiver.start();
-                while(socket.isConnected()) {
+                connectionFactory.buildConnection(node, serverSocket.accept());
+                display("New node connected.");
+                /*while(socket.isConnected()) {
+            receiver = new TCPReceiverThread(this.node, socket);
+            sender = new TCPSender(socket);
+            receiver.start();
                     String input = keyboard.nextLine();
                     while(input != null || !input.equalsIgnoreCase("quit")) {
                         sender.sendData(input.getBytes());
                         input = keyboard.nextLine();
                     }
-                }
-            } catch(IOException ioe) { display("IOE thrown:"+ioe.getMessage()); }
+                }*/
+            } catch(IOException ioe) { display("Error accepting new node connection:"+ioe.getMessage()); }
         }
     }
 

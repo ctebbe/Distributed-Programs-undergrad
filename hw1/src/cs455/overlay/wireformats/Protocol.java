@@ -1,17 +1,17 @@
-//package cs455.overlay.wireformats;
+package cs455.overlay.wireformats;
 public class Protocol {
 
     // message types
     public static final int NOTYPE                  = -1;
-    public static final int REGISTER                = 0;
-    public static final int REGISTER_RESPONSE       = 1;
-    public static final int DEREGISTER              = 2;
-    public static final int MESSAGING_NODES_LIST    = 3;
-    public static final int LINK_WEIGHTS            = 4;
-    public static final int TASK_INITIATE           = 5;
-    public static final int TASK_COMPLETE           = 6;
-    public static final int PULL_TRAFFIC_SUMMARY    = 7;
-    public static final int TRAFFIC_SUMMARY         = 8;
+    public static final int REGISTER                = 100;
+    public static final int REGISTER_RESPONSE       = 101;
+    public static final int DEREGISTER              = 102;
+    public static final int MESSAGING_NODES_LIST    = 103;
+    public static final int LINK_WEIGHTS            = 104;
+    public static final int TASK_INITIATE           = 105;
+    public static final int TASK_COMPLETE           = 106;
+    public static final int PULL_TRAFFIC_SUMMARY    = 107;
+    public static final int TRAFFIC_SUMMARY         = 108;
 
     // status codes
     public static final byte NOSTATUS               = (byte) 0x00;

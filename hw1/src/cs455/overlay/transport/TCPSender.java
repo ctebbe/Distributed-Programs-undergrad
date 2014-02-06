@@ -1,7 +1,11 @@
 package cs455.overlay.transport;
 import cs455.overlay.node.*;
+import cs455.overlay.wireformats.*;
 import java.io.*;
 import java.net.*;
+
+// a class to write data to a connected socket
+// it performs its job in one sweep so no need for its own thread
 public class TCPSender {
     private Socket socket;
     private DataOutputStream dout;
@@ -11,7 +15,8 @@ public class TCPSender {
         this.dout   = new DataOutputStream(socket.getOutputStream());
     }
 
-    public void sendData(byte[] toSend) throws IOException {
+    public void sendEvent(Event event) throws IOException {
+        byte[] toSend = event.getBytes();
         int len = toSend.length;
         dout.writeInt(len);
         dout.write(toSend, 0, len);
