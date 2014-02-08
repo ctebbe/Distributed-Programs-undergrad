@@ -9,9 +9,9 @@ import java.util.*;
 public class Registry implements Node { //implements Runnable {
 
     private TCPServerThread serverThread = null; // listens for incoming messaging nodes
-    private HashMap<String, NodeConnection> connectionMap = null; // holds registered messaging nodes 
+    private HashMap<String, NodeConnection> connectionMap = null; // holds registered messaging nodes
     private ArrayList<NodeConnection> connectionBuffer = null; // holds connected but not yet registered nodes
-    private Scanner keyboard = new Scanner(System.in);
+    private Scanner keyboard = null; // listen for registry commands from user
 
     // factories
     private EventFactory eventFactory = EventFactory.getInstance();
@@ -41,7 +41,7 @@ public class Registry implements Node { //implements Runnable {
     }
 
 
-    // *** REGISTRATION *** 
+    // *** REGISTRATION ***
 
     // buffers incoming connections to wait for a registration request
     public synchronized void registerConnection(NodeConnection connection) {
@@ -54,14 +54,13 @@ public class Registry implements Node { //implements Runnable {
     private void addConnectionToRegistry(NodeConnection nc) {
         try {
             Event response;
-            if(connectionMap.containsKey(nc.getHashKey())) // check if connection already in connectionMap
-                response = eventFactory.buildRegisterResponseEvent(
-                    nc, Protocol.FAILURE, "MessageNode already registered with key:"+nc.getHashKey());
+            if(connectionMap.containsKey(nc.getHashKey())) { // check if connection already in connectionMap
+                response = eventFactory.buildRegisterResponseEvent(nc, Protocol.FAILURE,
+                    "Register failure. Connection already registered with Registry."+nc.getHashKey());
 
-            
-            else { // passed checks, add new connection to connectionMap
+            } else { // passed checks, add new connection to connectionMap
                 connectionMap.put(nc.getHashKey(), nc);
-                response = eventFactory.buildRegisterResponseEvent(nc, Protocol.SUCCESS, 
+                response = eventFactory.buildRegisterResponseEvent(nc, Protocol.SUCCESS,
                     "Register success. Currently "+ connectionMap.size() + " nodes in the overlay.");
             }
 
@@ -78,7 +77,7 @@ public class Registry implements Node { //implements Runnable {
         return null;
     }
 
-    // *** DEREGISTRATION *** 
+    // *** DEREGISTRATION ***
 
     public void deregisterConnection(NodeConnection connection) {
     }
@@ -88,26 +87,27 @@ public class Registry implements Node { //implements Runnable {
     }
 
     public void run() {
+        keyboard = new Scanner(System.in);
         serverThread.start();
-        String input = keyboard.nextLine();
-        while(input != null || !input.equalsIgnoreCase("quit")) {
-            //display(input);
-            if(input.equals("connect")) connectNodes();
+        display("Server started");
+        display("Server started");
+        String input = keyboard.next();
+        while(input != null) {
+            display("Server started");
+            display(input);
+            if(input.equals("setup")) connectNodes();
             input = keyboard.nextLine();
         }
     }
 
     private void connectNodes() {
         NodeConnection[] conn = ((NodeConnection[])connectionMap.values().toArray());
-        String nodes = "";
-        for(NodeConnection nc : conn) {
-            nodes += nc.getHashKey() + "\n"; 
-        }
-        for(NodeConnection nc : conn) {
-            try {
-                nc.sendEvent(eventFactory.buildNodeListEvent(nc, connectionMap.size(), nodes));
-            } catch(IOException ioe) { display("Error sending regsiter request:"+ioe.toString()); }
-        }
+        String node1 = conn[0].getHashKey();
+        String node2 = conn[1].getHashKey();
+        try {
+            conn[0].sendEvent(eventFactory.buildNodeListEvent(conn[0], 1, node2));
+            conn[1].sendEvent(eventFactory.buildNodeListEvent(conn[1], 1, node1));
+        } catch(IOException ioe) { display("Error sending node list:"+ioe.toString()); }
     }
 
     public int getPort() { return serverThread.getPort(); }

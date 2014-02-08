@@ -37,7 +37,7 @@ public class NodeList implements Event {
         din.close();
     }
 
-    public byte[] getBytes() throws IOException { 
+    public byte[] getBytes() throws IOException {
         byte[] marshalledBytes = null;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dout = new DataOutputStream(new BufferedOutputStream(baos));
@@ -69,5 +69,5 @@ public class NodeList implements Event {
     public int getPort() { return this.header.getPort(); }
     public String getSenderKey() { return this.header.getSenderKey(); }
     public int getNumNodes() { return this.numNodes; }
-    public String getNodeList() { return this.nodeList; } 
+    public String getNodeList() { return this.nodeList; }
 }

@@ -23,11 +23,12 @@ public class MessagingNode implements Node { // , Runnable
     }
 
     public void onEvent(Event event) {
+        display(event.toString());
         switch(event.getType()) {
             case Protocol.REGISTER_RESPONSE:
-                display("Register response received:"+event.toString());
+                break;
             case Protocol.MESSAGING_NODES_LIST:
-                display("node list received:"+event.toString());
+                break;
             default:
         }
     }
