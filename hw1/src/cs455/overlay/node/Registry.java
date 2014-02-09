@@ -11,7 +11,6 @@ public class Registry implements Node { //implements Runnable {
     private TCPServerThread serverThread = null; // listens for incoming messaging nodes
     private HashMap<String, NodeConnection> connectionMap = null; // holds registered messaging nodes
     private ArrayList<NodeConnection> connectionBuffer = null; // holds connected but not yet registered nodes
-    private Scanner keyboard = null; // listen for registry commands from user
 
     // factories
     private EventFactory eventFactory = EventFactory.getInstance();
@@ -87,13 +86,10 @@ public class Registry implements Node { //implements Runnable {
     }
 
     public void run() {
-        keyboard = new Scanner(System.in);
         serverThread.start();
-        display("Server started");
-        display("Server started");
-        String input = keyboard.next();
+        Scanner keyboard = new Scanner(System.in);
+        String input = keyboard.nextLine();
         while(input != null) {
-            display("Server started");
             display(input);
             if(input.equals("setup")) connectNodes();
             input = keyboard.nextLine();
