@@ -18,7 +18,7 @@ public class TCPServerThread extends Thread {
     public TCPServerThread (Node node, ServerSocket ssocket) throws IOException {
         this.node = node;
         this.serverSocket = ssocket;
-        display("Serverthread listening on IP:"+serverSocket.getInetAddress().getLocalHost().toString());
+        display("Serverthread listening on IP:"+getIP());
         display("ServerThread listening on port:"+getPort());
     }
 
@@ -31,5 +31,10 @@ public class TCPServerThread extends Thread {
     }
 
     private void display(String s) { System.out.println(s); }
+    public String getIP() throws IOException { 
+        String temp = serverSocket.getInetAddress().getLocalHost().toString();
+        return temp.substring(temp.indexOf("/")+1); 
+    }
     public int getPort() { return serverSocket.getLocalPort(); }
+    public String getHashKey() throws IOException { return getIP() + ":" + getPort(); }
 }

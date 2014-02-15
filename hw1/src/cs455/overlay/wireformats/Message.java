@@ -2,35 +2,36 @@ package cs455.overlay.wireformats;
 import cs455.overlay.transport.*;
 import java.util.*;
 import java.io.*;
-public class NodeList implements Event {
+public class Message implements Event {
 
     private Header header = null;
-    private int connectionSize = -1; // number of nodes to connect to
-    private String[] connectionList;
+    private int payload = -1;
+    private String[] pathArray;
 
-    public NodeList(Header header, int numNodes, String[] list) {
+    public Message(Header header, int numNodes, String[] list) {
         this.header = header;
-        this.connectionSize = numNodes;
-        this.connectionList = list;
+        this.payload = numNodes;
+        this.pathArray = list;
     }
 
-    public NodeList(byte[] marshalledBytes) throws IOException {
+    public Message(byte[] marshalledBytes) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(marshalledBytes);
         DataInputStream din = new DataInputStream(new BufferedInputStream(bais));
 
         // header
         this.header = Header.parseHeader(din);
 
-        // num connection
-        this.connectionSize = din.readInt();
+        // payload
+        this.payload = din.readInt();
 
-        // list
-        this.connectionList = new String[this.connectionSize];
-        for(int i=0; i < this.connectionSize; i++) {
+        // path
+        int pathSize = din.readInt();
+        this.pathArray = new String[pathSize];
+        for(int i=0; i < pathSize; i++) {
             int len = din.readInt();
             byte[] strBytes = new byte[len];
             din.readFully(strBytes);
-            this.connectionList[i] = new String(strBytes);
+            this.pathArray[i] = new String(strBytes);
         }
 
         bais.close();
@@ -46,11 +47,12 @@ public class NodeList implements Event {
         byte[] headerBytes = header.getBytes();
         dout.write(headerBytes);
 
-        //  num nodes
-        dout.writeInt(getConnectionSize());
+        //  payload
+        dout.writeInt(this.payload);
 
-        // list
-        for(String str : getConnectionList()) {
+        // path
+        dout.writeInt(getMessagePathSize());
+        for(String str : getMessagePathArray()) {
             byte[] infoBytes = str.getBytes();
             dout.writeInt(infoBytes.length);
             dout.write(infoBytes);
@@ -69,15 +71,18 @@ public class NodeList implements Event {
     public String getIP() { return this.header.getIP(); }
     public int getPort() { return this.header.getPort(); }
     public String getSenderKey() { return this.header.getSenderKey(); }
-    public int getConnectionSize() { return this.connectionSize; }
-    public String[] getConnectionList() { return this.connectionList; }
+
+    public int getPayload() { return this.payload; }
+    public String[] getMessagePathArray() { return this.pathArray; }
+    public int getMessagePathSize() { return getMessagePathArray().length; }
+
     public String toString() {
-        return header.toString() + " \n\tConnection #:" + getConnectionSize() + 
-            " \n\tList:\t" + getConnectionListString();
+        return header.toString() + " \n\tHops #:" + () + 
+            " \n\tList:\t" + getMessagePathString();
     }
-    public String getConnectionListString() {
+    public String getMessagePathString() {
         String ret = "";
-        for(String s : getConnectionList()) {
+        for(String s : getMessagePathArray()) {
             ret += "\t\t" + s + "\n";
         }
         return ret.trim();

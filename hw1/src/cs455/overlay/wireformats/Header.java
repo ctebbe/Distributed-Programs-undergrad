@@ -67,7 +67,7 @@ public class Header implements Event {
     }
 
     public String toString() {
-        return "Type:"+Protocol.getProtocolString(getType()) + " Sender Key:"+getSenderKey();
+        return "["+Protocol.getProtocolString(getType()) + " Key:"+getSenderKey() + "]";
     }
 
     public int getPort() { return this.port; }

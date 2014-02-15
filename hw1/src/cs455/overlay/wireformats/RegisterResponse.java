@@ -13,7 +13,7 @@ public class RegisterResponse implements Event {
         this.information = info;
     }
     public String toString() {
-        return header.toString() + " status:" + getStatus() + " information:" + getInformation();
+        return header.toString() + " \n\tStatus:" + getStatus() + " \n\tInformation:" + getInformation();
     }
 
     public RegisterResponse(byte[] marshalledBytes) throws IOException {

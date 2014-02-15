@@ -11,6 +11,9 @@ public class Registry implements Node { //implements Runnable {
     private TCPServerThread serverThread = null; // listens for incoming messaging nodes
     private HashMap<String, NodeConnection> connectionMap = null; // holds registered messaging nodes
     private ArrayList<NodeConnection> connectionBuffer = null; // holds connected but not yet registered nodes
+    private OverlayCreator overlayCreator = new OverlayCreator();
+    private String[][] overlay;
+    private String[] linkWeights;
 
     // factories
     private EventFactory eventFactory = EventFactory.getInstance();
@@ -23,7 +26,7 @@ public class Registry implements Node { //implements Runnable {
             serverThread = new TCPServerThread(this, new ServerSocket(port));
             run();
         } catch(IOException ioe) {
-            display(ioe.toString());
+            display("IOException thrown:"+ioe.toString());
         }
     }
 
@@ -31,8 +34,11 @@ public class Registry implements Node { //implements Runnable {
         display("Event:"+event.toString());
         switch(event.getType()) {
             case Protocol.REGISTER:
-                //display("Attempting to register node:"+((Register) event).getSenderKey());
-                addConnectionToRegistry(getBufferedConnection(((Register) event).getSenderKey()));
+                NodeConnection toAdd = getBufferedConnection(((Register) event).getSenderKey());
+                //display(Boolean.toString(toAdd == null));
+                //display(toAdd.getHashKey());
+                toAdd.setServerPort(((Register) event).getServerPort());
+                addConnectionToRegistry(toAdd);
                 break;
             default:
                 display("unknown event type.");
@@ -44,7 +50,7 @@ public class Registry implements Node { //implements Runnable {
 
     // buffers incoming connections to wait for a registration request
     public synchronized void registerConnection(NodeConnection connection) {
-        //display("buffered new connection. key:"+connection.getHashKey());
+        //display("buffered new connection. hash key:"+connection.getHashKey());
         connectionBuffer.add(connection);
     }
 
@@ -70,7 +76,9 @@ public class Registry implements Node { //implements Runnable {
 
     // finds, removes, and returns a buffered connection with hashKey key
     private NodeConnection getBufferedConnection(String key) {
+        //display("key to get from buffer:"+key);
         for(NodeConnection nc : this.connectionBuffer) {
+            //display("this key:"+nc.getHashKey());
             if(nc.getHashKey().equals(key)) return connectionBuffer.remove(connectionBuffer.indexOf(nc));
         }
         return null;
@@ -85,28 +93,56 @@ public class Registry implements Node { //implements Runnable {
         System.out.println(str);
     }
 
-    public void run() {
+    public void run() throws IOException {
         serverThread.start();
         Scanner keyboard = new Scanner(System.in);
         String input = keyboard.nextLine();
         while(input != null) {
-            display(input);
-            if(input.equals("setup")) connectNodes();
+            //display(input);
+            if(input.contains("setup-overlay")) setupOverlay();
+            else if(input.contains("send-link-weights")) setupAndSendLinkWeights();
+            else if(input.contains("list-messaging nodes")) printRegisteredMessagingNodes();
+            else if(input.contains("list-weights")) printLinkWeights();
+            else if(input.contains("start")) ;
             input = keyboard.nextLine();
         }
     }
 
-    private void connectNodes() {
-        NodeConnection[] conn = ((NodeConnection[])connectionMap.values().toArray());
-        String node1 = conn[0].getHashKey();
-        String node2 = conn[1].getHashKey();
-        try {
-            conn[0].sendEvent(eventFactory.buildNodeListEvent(conn[0], 1, node2));
-            conn[1].sendEvent(eventFactory.buildNodeListEvent(conn[1], 1, node1));
-        } catch(IOException ioe) { display("Error sending node list:"+ioe.toString()); }
+    private void printLinkWeights() {
+        if(this.linkWeights == null) return;
+        for(String link : this.linkWeights) {
+            display(link);
+        }
+    }
+
+    private void setupAndSendLinkWeights() throws IOException {
+        NodeConnection[] nodes = getNodeConnectionArray();
+        this.linkWeights    = overlayCreator.assignLinkWeights(nodes, this.overlay);
+        for(NodeConnection nc : nodes) {
+            nc.sendEvent(eventFactory.buildLinkWeightsEvent(nc, linkWeights.length, linkWeights));
+        }
+    }
+
+    private void printRegisteredMessagingNodes() {
+        for(NodeConnection nc : getNodeConnectionArray()) {
+            display(nc.getServerKey());
+        } 
+    }
+
+    // sets up connections and link weights
+    private void setupOverlay() throws IOException {
+        NodeConnection[] nodes = getNodeConnectionArray();
+        this.overlay      = overlayCreator.generateOverlay(nodes);
+        for(int i=0; i < nodes.length; i++) {
+            if(overlay[i].length < 1) continue; // skip nodes with noone to connect to
+            nodes[i].sendEvent(eventFactory.buildNodeListEvent(nodes[i], overlay[i].length, overlay[i]));
+        }
     }
 
     public int getPort() { return serverThread.getPort(); }
+    private NodeConnection[] getNodeConnectionArray() { 
+        return connectionMap.values().toArray(new NodeConnection[0]); 
+    }
 
     public static void main(String args[]) {
         Registry registry = null;

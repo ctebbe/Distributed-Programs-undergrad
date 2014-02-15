@@ -12,6 +12,7 @@ public class Protocol {
     public static final int TASK_COMPLETE           = 106;
     public static final int PULL_TRAFFIC_SUMMARY    = 107;
     public static final int TRAFFIC_SUMMARY         = 108;
+    public static final int MESSAGE                 = 109;
 
     // status codes
     public static final byte NOSTATUS               = (byte) 0x00;
@@ -25,6 +26,7 @@ public class Protocol {
             case REGISTER_RESPONSE:     return "REGISTER_RESPONSE";
             case DEREGISTER:            return "DEREGISTER";
             case MESSAGING_NODES_LIST:  return "MESSAGING_NODES_LIST";
+            case MESSAGE:               return "MESSAGE";
             case LINK_WEIGHTS:          return "LINK_WEIGHTS";
             case TASK_INITIATE:         return "TASK_INITIATE";
             case TASK_COMPLETE:         return "TASK_COMPLETE";
