@@ -2,6 +2,7 @@ package cs455.overlay.node;
 import cs455.overlay.transport.*;
 import cs455.overlay.wireformats.*;
 import cs455.overlay.util.*;
+import cs455.overlay.dijkstra.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -14,6 +15,7 @@ public class MessagingNode implements Node { // , Runnable
     private Scanner keyboard = new Scanner(System.in);
     private String[] linkWeights = null;
     private MessageTracker tracker = null; // init this when ready to collect stats
+    private RoutingCache routeCache = null;
 
     // factories
     private EventFactory eventFactory = EventFactory.getInstance();
@@ -24,6 +26,7 @@ public class MessagingNode implements Node { // , Runnable
             connectionMap = new HashMap<>();
             connectionRegistry = connectionFactory.buildConnection(this, new Socket(host, port));
             serverThread = new TCPServerThread(this, new ServerSocket(0)); // listen on first avail port
+            tracker = new MessageTracker();
         } catch(IOException ioe) { display("Error connecting to registry:"+ioe.getMessage()); }
         init();
     }
@@ -38,23 +41,36 @@ public class MessagingNode implements Node { // , Runnable
                 break;
             case Protocol.LINK_WEIGHTS:
                 handleLinkWeights(((LinkWeights) event).getLinkArray());
+                routeCache = Dijkstra.generateRoutingPlan(serverThread.getHashKey(), ((LinkWeights) event).getLinkArray());
                 break;
             case Protocol.TASK_INITIATE:
-                tracker = new MessageTracker();
                 startTask();
+                break;
             case Protocol.MESSAGE:
                 handleMessage(((Message) event));
+                break;
             default:
         }
     }
 
     private void handleMessage(Message message) {
-        
+        if(message.isFinalDestination()) {
+            tracker.messageReceived();
+            tracker.addReceiveSummation(message.getPayload());
+
+        } else if(message.isRelayMessage()) {
+            tracker.messageRelayed();
+            // strip ourselves off the path and reset it
+            message.setMessagePathArray(Util.stripFirstElement(message.getMessagePathArray()));
+            // pass message off to its next destination
+            connectionMap.get(message.getNextDestination()).sendEvent(message);
+        }
     }
 
     private void startTask() {
     }
 
+    // check if i need this since started hashing by IP address
     private void handleLinkWeights(String[] weights) {
         this.linkWeights = weights;
         try {
@@ -69,7 +85,6 @@ public class MessagingNode implements Node { // , Runnable
                             display("\tfound match:"+node.toString());
                             display("\thash key:"+entry.getKey().toString());
                         }
-                        
                     }
                 }
             }

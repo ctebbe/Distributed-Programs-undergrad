@@ -36,7 +36,7 @@ public class RegisterResponse implements Event {
         din.close();
     }
 
-    public byte[] getBytes() throws IOException { 
+    public byte[] getBytes() throws IOException {
         byte[] marshalledBytes = null;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dout = new DataOutputStream(new BufferedOutputStream(baos));

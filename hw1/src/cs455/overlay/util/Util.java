@@ -25,4 +25,11 @@ public class Util {
     public static int generateRandomNumber(int min, int max) {
         return (int)(Math.random() * ((max-min) + 1) + min);
     }
+    public static String[] stripFirstElement(String[] toStrip) {
+        String[] toReturn = new String[toStrip.length-1];
+        for(int i=1; i < toStrip.length; i++) {
+            toReturn[i-1] = toStrip[i];
+        }
+        return toReturn;
+    }
 }

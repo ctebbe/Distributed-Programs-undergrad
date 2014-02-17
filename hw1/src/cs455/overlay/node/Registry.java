@@ -11,7 +11,7 @@ public class Registry implements Node { //implements Runnable {
     private TCPServerThread serverThread = null; // listens for incoming messaging nodes
     private HashMap<String, NodeConnection> connectionMap = null; // holds registered messaging nodes
     private ArrayList<NodeConnection> connectionBuffer = null; // holds connected but not yet registered nodes
-    private OverlayCreator overlayCreator = new OverlayCreator();
+    private OverlayCreator overlayCreator;
     private String[][] overlay;
     private String[] linkWeights;
 
@@ -21,9 +21,10 @@ public class Registry implements Node { //implements Runnable {
 
     public Registry(int port) {
         try {
-            connectionMap = new HashMap<>();
-            connectionBuffer = new ArrayList<>();
-            serverThread = new TCPServerThread(this, new ServerSocket(port));
+            serverThread        = new TCPServerThread(this, new ServerSocket(port));
+            connectionMap       = new HashMap<>();
+            connectionBuffer    = new ArrayList<>();
+            overlayCreator      = new OverlayCreator();
             run();
         } catch(IOException ioe) {
             display("IOException thrown:"+ioe.toString());
@@ -103,8 +104,14 @@ public class Registry implements Node { //implements Runnable {
             else if(input.contains("send-link-weights")) setupAndSendLinkWeights();
             else if(input.contains("list-messaging nodes")) printRegisteredMessagingNodes();
             else if(input.contains("list-weights")) printLinkWeights();
-            else if(input.contains("start")) ;
+            else if(input.contains("start")) sendTaskInitiate();
             input = keyboard.nextLine();
+        }
+    }
+
+    private void sendTaskInitiate() throws IOException {
+        for(NodeConnection node : getNodeConnectionArray()) {
+            node.sendEvent(eventFactory.buildTaskInitiateEvent(node));
         }
     }
 
@@ -116,9 +123,9 @@ public class Registry implements Node { //implements Runnable {
     }
 
     private void setupAndSendLinkWeights() throws IOException {
-        NodeConnection[] nodes = getNodeConnectionArray();
-        this.linkWeights    = overlayCreator.assignLinkWeights(nodes, this.overlay);
-        for(NodeConnection nc : nodes) {
+        NodeConnection[] nodes  = getNodeConnectionArray();
+        this.linkWeights        = overlayCreator.assignLinkWeights(nodes, this.overlay);
+        for(NodeConnection nc : nodes) { // send generated link weights to all registered nodes
             nc.sendEvent(eventFactory.buildLinkWeightsEvent(nc, linkWeights.length, linkWeights));
         }
     }
@@ -126,13 +133,13 @@ public class Registry implements Node { //implements Runnable {
     private void printRegisteredMessagingNodes() {
         for(NodeConnection nc : getNodeConnectionArray()) {
             display(nc.getServerKey());
-        } 
+        }
     }
 
     // sets up connections and link weights
     private void setupOverlay() throws IOException {
-        NodeConnection[] nodes = getNodeConnectionArray();
-        this.overlay      = overlayCreator.generateOverlay(nodes);
+        NodeConnection[] nodes  = getNodeConnectionArray();
+        this.overlay            = overlayCreator.generateOverlay(nodes);
         for(int i=0; i < nodes.length; i++) {
             if(overlay[i].length < 1) continue; // skip nodes with noone to connect to
             nodes[i].sendEvent(eventFactory.buildNodeListEvent(nodes[i], overlay[i].length, overlay[i]));
@@ -140,8 +147,8 @@ public class Registry implements Node { //implements Runnable {
     }
 
     public int getPort() { return serverThread.getPort(); }
-    private NodeConnection[] getNodeConnectionArray() { 
-        return connectionMap.values().toArray(new NodeConnection[0]); 
+    private NodeConnection[] getNodeConnectionArray() {
+        return connectionMap.values().toArray(new NodeConnection[0]);
     }
 
     public static void main(String args[]) {

@@ -29,8 +29,10 @@ public class NodeConnection {
         receiver.start();
     }
 
-    public void sendEvent(Event event) throws IOException {
-        this.sender.sendEvent(event);
+    public synchronized void sendEvent(Event event) {
+        try { this.sender.sendEvent(event);
+
+        } catch(IOException ioe) { System.out.println("Error sending event:"+ioe.toString()); }
     }
 
     // added server info for messaging nodes

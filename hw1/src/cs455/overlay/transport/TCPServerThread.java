@@ -12,12 +12,14 @@ public class TCPServerThread extends Thread {
     private TCPReceiverThread receiver = null;
     private TCPSender sender = null;
     private Scanner keyboard = new Scanner(System.in);
+    private String hash;
 
     private ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 
     public TCPServerThread (Node node, ServerSocket ssocket) throws IOException {
         this.node = node;
         this.serverSocket = ssocket;
+        this.hash = getIP() + ":" + getPort();
         display("Serverthread listening on IP:"+getIP());
         display("ServerThread listening on port:"+getPort());
     }
@@ -31,10 +33,10 @@ public class TCPServerThread extends Thread {
     }
 
     private void display(String s) { System.out.println(s); }
-    public String getIP() throws IOException { 
+    public String getIP() throws IOException {
         String temp = serverSocket.getInetAddress().getLocalHost().toString();
-        return temp.substring(temp.indexOf("/")+1); 
+        return temp.substring(temp.indexOf("/")+1);
     }
     public int getPort() { return serverSocket.getLocalPort(); }
-    public String getHashKey() throws IOException { return getIP() + ":" + getPort(); }
+    public String getHashKey() { return this.hash; }
 }

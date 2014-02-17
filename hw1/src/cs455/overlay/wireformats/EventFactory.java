@@ -14,8 +14,8 @@ public class EventFactory {
     }
 
     // MESSAGE
-    public static Event buildMessageEvent(NodeConnection connection, int rand) throws IOException {
-        return new Message(Protocol.MESSAGE, connection, rand);
+    public static Event buildMessageEvent(NodeConnection connection, int rand, String[] msgPath) throws IOException {
+        return new Message(new Header(Protocol.REGISTER_RESPONSE, connection), rand, msgPath);
     }
     // REGISTER
     public static Event buildRegisterEvent(NodeConnection connection, int port) throws IOException {
@@ -24,6 +24,10 @@ public class EventFactory {
     // REGISTER_RESP
     public static Event buildRegisterResponseEvent(NodeConnection connection, byte status, String info) throws IOException {
         return new RegisterResponse(new Header(Protocol.REGISTER_RESPONSE, connection), status, info);
+    }
+    // TASK_INIT
+    public static Event buildTaskInitiateEvent(NodeConnection connection) throws IOException {
+        return new TaskInitiate(new Header(Protocol.TASK_INITIATE, connection));
     }
     // NODE_LIST
     public static Event buildNodeListEvent(NodeConnection connection, int num, String[] nodes) throws IOException {
@@ -50,6 +54,8 @@ public class EventFactory {
                     return new LinkWeights(marshalledBytes);
                 case Protocol.MESSAGE:
                     return new Message(marshalledBytes);
+                case Protocol.TASK_INITIATE:
+                    return new TaskInitiate(marshalledBytes);
                 default: return null;
             }
         } catch(IOException ioe) { System.out.println(ioe.toString()); }

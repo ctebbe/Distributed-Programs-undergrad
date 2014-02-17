@@ -1,5 +1,6 @@
 package cs455.overlay.wireformats;
 import cs455.overlay.transport.*;
+import cs455.overlay.util.*;
 import java.util.*;
 import java.io.*;
 public class Message implements Event {
@@ -8,9 +9,9 @@ public class Message implements Event {
     private int payload = -1;
     private String[] pathArray;
 
-    public Message(Header header, int numNodes, String[] list) {
+    public Message(Header header, int payload, String[] list) {
         this.header = header;
-        this.payload = numNodes;
+        this.payload = payload;
         this.pathArray = list;
     }
 
@@ -72,12 +73,17 @@ public class Message implements Event {
     public int getPort() { return this.header.getPort(); }
     public String getSenderKey() { return this.header.getSenderKey(); }
 
+    public boolean isRelayMessage() { return (this.pathArray.length > 1); }
+    public boolean isFinalDestination() { return (this.pathArray.length == 1); }
+    public String getNextDestination() { return Util.stripIP(this.pathArray[0]); }
+
     public int getPayload() { return this.payload; }
     public String[] getMessagePathArray() { return this.pathArray; }
+    public void setMessagePathArray(String[] array) { this.pathArray = array; }
     public int getMessagePathSize() { return getMessagePathArray().length; }
 
     public String toString() {
-        return header.toString() + " \n\tHops #:" + () + 
+        return header.toString() + " \n\tHops #:" + getMessagePathSize() +
             " \n\tList:\t" + getMessagePathString();
     }
     public String getMessagePathString() {
