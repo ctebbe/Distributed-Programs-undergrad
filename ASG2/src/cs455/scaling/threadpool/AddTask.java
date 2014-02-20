@@ -20,7 +20,7 @@ public class AddTask extends Task {
 
     @Override
     public void run() {
-        System.out.println("Adding task:");
+        System.out.println(getType());
         int total = this.first + this.second;
         System.out.println(total);
     }

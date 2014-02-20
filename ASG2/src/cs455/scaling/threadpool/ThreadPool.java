@@ -35,15 +35,16 @@ public class ThreadPool {
     public static void main(String[] args) {
         ThreadPool pool = new ThreadPool(3);
         try {
-            pool.addTaskToExecute(new AddTask(0, 1));
-            pool.addTaskToExecute(new AddTask(0, 2));
-            pool.addTaskToExecute(new AddTask(0, 3));
-            pool.addTaskToExecute(new AddTask(0, 4));
-            pool.addTaskToExecute(new AddTask(0, 5));
-            pool.addTaskToExecute(new AddTask(0, 6));
-            pool.addTaskToExecute(new AddTask(0, 7));
+            for(int i=0; i < 300; i++) {
+                pool.addTaskToExecute(new AddTask(0, 1)); pool.addTaskToExecute(new MultiplyTask(0, 1));
+                pool.addTaskToExecute(new SleepTask()); pool.addTaskToExecute(new MultiplyTask(0, 1));
+                pool.addTaskToExecute(new SleepTask()); pool.addTaskToExecute(new MultiplyTask(0, 1));
+                pool.addTaskToExecute(new SleepTask()); pool.addTaskToExecute(new AddTask(0, 2));
+                pool.addTaskToExecute(new MultiplyTask(0, 1)); pool.addTaskToExecute(new SleepTask());
+
+            }
 
         } catch (InterruptedException e) { e.printStackTrace(); }
-        pool.killPool();
+        //pool.killPool();
     }
 }
