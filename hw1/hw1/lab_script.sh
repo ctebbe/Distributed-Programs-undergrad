@@ -15,6 +15,6 @@ for i in `cat machines_10`
 do
     echo 'sshing into '${i}
     #gnome-terminal -x bash -c "ssh -t ${i} 'echo 'hello world!'; bash'" &
-    gnome-terminal -x bash -c "ssh -t ${i} 'cd '~/workspace/cs455/hw1/'; 
+    gnome-terminal -x bash -c "ssh -t ${i} 'cd '~/workspace/cs455/hw1/hw1'; 
         echo $HOSTNAME; ant -Darg0=${HOST} -Darg1=${PORT} node_args; bash'" #&
 done
