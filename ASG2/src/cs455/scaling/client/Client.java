@@ -1,8 +1,12 @@
 package cs455.scaling.client;
 
+import cs455.scaling.util.Util;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -22,6 +26,7 @@ public class Client implements Runnable {
         this.hostAddress = host;
         this.port = port;
         this.selector = SelectorProvider.provider().openSelector();
+        initiateConnection();
     }
 
     public void send(byte[] dataToSend) throws IOException {
@@ -36,19 +41,49 @@ public class Client implements Runnable {
         // connect to our host and port
         channel.connect(new InetSocketAddress(getHost(), getPort()));
 
+        // register with our selector
+        selector = Selector.open();
+        channel.register(selector, SelectionKey.OP_CONNECT);
+
         return channel;
     }
 
     @Override
     public void run() {
+        try {
+            while(selector.select() > 0) {
+                for(SelectionKey key : selector.selectedKeys()) {
+                    selector.selectedKeys().remove(key);
+                    SocketChannel myChan = (SocketChannel) key.channel();
+
+                    if(key.isConnectable()) {
+                        if(myChan.isConnectionPending()) {
+                            myChan.finishConnect();
+                            System.out.println("is conn?"+myChan.isConnected());
+                        }
+                    }
+
+                    // generate data to send
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(Util.BUFFER_SIZE);
+                    byteBuffer.put(Util.generateRandomByteArray());
+
+                    System.out.println("Attempting to send:"+byteBuffer.hashCode());
+                    myChan.write(byteBuffer);
+                }
+            }
+
+        } catch (IOException e) { e.printStackTrace(); }
+
+        /*
         while(true) {
             try {
 
                 this.selector.select();
-                for(SelectionKey key : )
+                //for(SelectionKey key : )
 
             } catch (IOException e) { e.printStackTrace(); }
         }
+        */
     }
 
     public int getPort() { return this.port; }

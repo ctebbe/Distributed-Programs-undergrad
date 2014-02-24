@@ -1,5 +1,7 @@
 package cs455.scaling.server;
 
+import cs455.scaling.util.Util;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -23,14 +25,14 @@ public class Server implements Runnable {
 
     private Selector selector; // selector to monitor
 
-    private ByteBuffer readBuffer = ByteBuffer.allocate(8192); // 8 kb of buffer space to read
+    private ByteBuffer readBuffer = ByteBuffer.allocate(Util.BUFFER_SIZE); // 8 kb of buffer space to read
 
     public Server(InetAddress host, int port) throws IOException{
         this.hostAddress = host;
         this.port = port;
         selector = this.initializeSelector();
-        System.out.println(getHost());
-        System.out.println(getPort());
+        //System.out.println(getHost());
+        //System.out.println(getPort());
     }
 
     private Selector initializeSelector() throws IOException {
@@ -42,12 +44,14 @@ public class Server implements Runnable {
         serverChannel.socket().bind(new InetSocketAddress(getHost(), getPort()));
 
         // invite connections
-        serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
+        SelectionKey selectionKey = serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
+        System.out.println("socketChannel's registered key:"+selectionKey.channel().toString());
         return socketSelector;
     }
 
     // accepts a connection from a ServerSocketChannel
     private void accept(SelectionKey key) throws IOException {
+        System.out.println("Attempting to accept a connection");
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 
         // accept connection and turn blocking off
@@ -60,6 +64,7 @@ public class Server implements Runnable {
 
     // read byte data
     private void read(SelectionKey key) throws IOException {
+        System.out.println("Attempting to read from a channel");
         SocketChannel channel = (SocketChannel) key.channel();
         this.readBuffer.clear(); // clear any stale data from the buffer
 
@@ -69,12 +74,26 @@ public class Server implements Runnable {
             channel.close();
             key.cancel();
         }
-        System.out.println(this.readBuffer.toString());
+        System.out.println(this.readBuffer.hashCode());
     }
 
     @Override
     public void run() {
+        while(true) {
+            try {
 
+                this.selector.select(); // get an event from a registered channel
+                for(SelectionKey key : this.selector.selectedKeys()) {
+                    if(!key.isValid()) continue;
+                    this.selector.selectedKeys().remove(key);
+                    // handle the event for this key
+                    if(key.isAcceptable()) this.accept(key);
+                    else if(key.isReadable()) this.read(key);
+                }
+
+            } catch (IOException e) { e.printStackTrace(); }
+
+        }
     }
     private String getHost()    { return this.hostAddress.getHostName(); }
     private int getPort()       { return this.port; }
