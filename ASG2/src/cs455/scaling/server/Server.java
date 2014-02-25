@@ -11,7 +11,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.Scanner;
 
 /**
  * Created by crt on 2/18/14.
@@ -25,7 +24,7 @@ public class Server implements Runnable {
 
     private Selector selector; // selector to monitor
 
-    private ByteBuffer readBuffer = ByteBuffer.allocate(Util.BUFFER_SIZE); // 8 kb of buffer space to read
+    private ByteBuffer readBuffer = ByteBuffer.allocate(Util.BYTE_BUFFER_SIZE); // 8 kb of buffer space to read
 
     public Server(InetAddress host, int port) throws IOException{
         this.hostAddress = host;
@@ -45,7 +44,7 @@ public class Server implements Runnable {
 
         // invite connections
         SelectionKey selectionKey = serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
-        System.out.println("socketChannel's registered key:"+selectionKey.channel().toString());
+        System.out.println("socketChannel's registered key:" + selectionKey.channel().toString());
         return socketSelector;
     }
 
@@ -81,11 +80,11 @@ public class Server implements Runnable {
     public void run() {
         while(true) {
             try {
-
+                System.out.println("trying");
                 this.selector.select(); // get an event from a registered channel
                 for(SelectionKey key : this.selector.selectedKeys()) {
                     if(!key.isValid()) continue;
-                    this.selector.selectedKeys().remove(key);
+                    //this.selector.selectedKeys().remove(key);
                     // handle the event for this key
                     if(key.isAcceptable()) this.accept(key);
                     else if(key.isReadable()) this.read(key);

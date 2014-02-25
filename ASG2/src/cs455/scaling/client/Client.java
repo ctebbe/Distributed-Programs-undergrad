@@ -5,32 +5,36 @@ import cs455.scaling.util.Util;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by ctebbe on 2/20/14.
  */
 public class Client implements Runnable {
 
-    private InetAddress hostAddress;
-    private int port;
+    private InetAddress hostAddress = null;
+    private int port = Integer.MIN_VALUE;
 
-    private Selector selector;
+    private ArrayList<String> sentDataHashes = null;
+    private ByteBuffer byteBuffer;
+
+    private Selector selector = null;
 
     public Client(InetAddress host, int port) throws IOException {
         this.hostAddress = host;
         this.port = port;
+        sentDataHashes = new ArrayList<String>();
+        byteBuffer = ByteBuffer.allocate(Util.BYTE_BUFFER_SIZE);
         this.selector = SelectorProvider.provider().openSelector();
         initiateConnection();
-    }
-
-    public void send(byte[] dataToSend) throws IOException {
-
     }
 
     private SocketChannel initiateConnection() throws IOException {
@@ -51,29 +55,27 @@ public class Client implements Runnable {
     @Override
     public void run() {
         try {
-            while(selector.select() > 0) {
+            while(!Thread.interrupted()) {
+                selector.select();
+
                 for(SelectionKey key : selector.selectedKeys()) {
                     selector.selectedKeys().remove(key);
-                    SocketChannel myChan = (SocketChannel) key.channel();
+                    SocketChannel currentChannel = (SocketChannel) key.channel();
 
                     if(key.isConnectable()) {
-                        if(myChan.isConnectionPending()) {
-                            myChan.finishConnect();
-                            System.out.println("is conn?"+myChan.isConnected());
-                        }
+                        if(currentChannel.isConnectionPending()) currentChannel.finishConnect();
+                        //new Thread(new ClientSenderTask(currentChannel, sentDataHashes)).start();
+                        ByteBuffer buffer = ByteBuffer.allocate(Util.BYTE_BUFFER_SIZE);
+                        final byte[] randomData = Util.generateRandomByteArray();
+                        System.out.println("random data hash:"+Util.SHA1FromBytes(randomData));
+                        buffer.put(randomData);
+                        currentChannel.write(buffer);
                     }
 
-                    // generate data to send
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(Util.BUFFER_SIZE);
-                    byteBuffer.put(Util.generateRandomByteArray());
-
-                    System.out.println("Attempting to send:"+byteBuffer.hashCode());
-                    myChan.write(byteBuffer);
                 }
             }
 
-        } catch (IOException e) { e.printStackTrace(); }
-
+        } catch (IOException e) { e.printStackTrace(); } catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
         /*
         while(true) {
             try {
