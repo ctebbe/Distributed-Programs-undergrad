@@ -13,24 +13,36 @@ import java.util.ArrayList;
  */
 public class ClientSenderTask implements Runnable {
 
-    private SocketChannel channel = null;
+    private SocketChannel serverChannel = null;
     private ArrayList<String> sentDataHashes = null;
+    private int sendRate;
 
-    public ClientSenderTask(SocketChannel channel, ArrayList<String> sentDataHashes) {
-        this.channel = channel;
+    public ClientSenderTask(SocketChannel channel, ArrayList<String> sentDataHashes,
+                            int sendRate) {
+        this.serverChannel = channel;
         this.sentDataHashes = sentDataHashes;
+        this.sendRate = sendRate;
     }
 
     @Override
     public void run() {
-        try {
-            ByteBuffer buffer = ByteBuffer.allocate(Util.BYTE_BUFFER_SIZE);
-            final byte[] randomData = Util.generateRandomByteArray();
-            System.out.println("random data hash:"+Util.SHA1FromBytes(randomData));
-            buffer.put(randomData);
-            channel.write(buffer);
+        //while(!Thread.interrupted()) {
+        for(int i=0; i < 5; i++) {
+            try {
+                Thread.sleep(1000 / this.sendRate); // ensure we are sending at given rate
+
+                ByteBuffer buffer = Util.generateRandomByteBuffer();
+                System.out.println(Util.SHA1FromByteBuffer(buffer));
+
+                synchronized (this.sentDataHashes) {
+                    this.sentDataHashes.add(Util.SHA1FromByteBuffer(buffer));
+                }
+
+                serverChannel.write(buffer);
+            }
+            catch (IOException e) { e.printStackTrace(); }
+            catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
+            catch (InterruptedException e) { e.printStackTrace(); }
         }
-        catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
-        catch (IOException e) { e.printStackTrace(); }
     }
 }

@@ -11,6 +11,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by crt on 2/18/14.
@@ -23,8 +24,6 @@ public class Server implements Runnable {
     private ServerSocketChannel serverChannel; // channel to accept connections
 
     private Selector selector; // selector to monitor
-
-    private ByteBuffer readBuffer = ByteBuffer.allocate(Util.BYTE_BUFFER_SIZE); // 8 kb of buffer space to read
 
     public Server(InetAddress host, int port) throws IOException{
         this.hostAddress = host;
@@ -44,13 +43,14 @@ public class Server implements Runnable {
 
         // invite connections
         SelectionKey selectionKey = serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
-        System.out.println("socketChannel's registered key:" + selectionKey.channel().toString());
+        System.out.println("socketChannel's registered key:" +
+                Util.stripInfo(selectionKey.channel()));
         return socketSelector;
     }
 
     // accepts a connection from a ServerSocketChannel
     private void accept(SelectionKey key) throws IOException {
-        System.out.println("Attempting to accept a connection");
+        System.out.println("Accepting a connection from:"+Util.stripInfo(key.channel()));
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 
         // accept connection and turn blocking off
@@ -62,36 +62,28 @@ public class Server implements Runnable {
     }
 
     // read byte data
-    private void read(SelectionKey key) throws IOException {
-        System.out.println("Attempting to read from a channel");
-        SocketChannel channel = (SocketChannel) key.channel();
-        this.readBuffer.clear(); // clear any stale data from the buffer
-
-        // read data from the wire
-        int clientData = channel.read(this.readBuffer);
-        if(clientData == -1) { // stream has been closed from client end
-            channel.close();
-            key.cancel();
-        }
-        System.out.println(this.readBuffer.hashCode());
+    private void read(SelectionKey key) throws IOException, NoSuchAlgorithmException {
+        System.out.println(Util.SHA1FromSocketChannel((SocketChannel) key.channel()));
     }
 
     @Override
     public void run() {
         while(true) {
             try {
-                System.out.println("trying");
                 this.selector.select(); // get an event from a registered channel
                 for(SelectionKey key : this.selector.selectedKeys()) {
                     if(!key.isValid()) continue;
-                    //this.selector.selectedKeys().remove(key);
+
+                    //System.out.println("handling key from:"+key.channel().toString());
+
+                    this.selector.selectedKeys().remove(key);
                     // handle the event for this key
                     if(key.isAcceptable()) this.accept(key);
                     else if(key.isReadable()) this.read(key);
                 }
-
-            } catch (IOException e) { e.printStackTrace(); }
-
+            }
+            catch (IOException e) { e.printStackTrace(); }
+            catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
         }
     }
     private String getHost()    { return this.hostAddress.getHostName(); }
