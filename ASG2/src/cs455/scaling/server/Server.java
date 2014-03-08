@@ -76,11 +76,20 @@ public class Server implements Runnable {
                     */
                     if(key.isAcceptable()) {
                         ClientInfo clientInfo = new ClientInfo((ServerSocketChannel) key.channel());
+
                         System.out.println("new accept key");
                         System.out.println(clientList.contains(clientInfo));
-                        if(clientList.contains(clientInfo)) continue;
+
+                        // dont let the key for a client get in twice or hell breaks loose
+                        if(clientList.contains(clientInfo)) {
+                            //key.cancel();
+                            //System.out.println("canceled key");
+                            continue;
+                        }
                         clientList.add(clientInfo);
+
                         threadPool.addTaskToExecute((new AcceptTask(key, this.selector)));
+
                     } else if(key.isReadable()) {
                         threadPool.addTaskToExecute(new ReadTask(key));
                     }
