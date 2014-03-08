@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="tebbe_caleb_ASG2" default="jar">
+
+    <target name="clean">
+        <delete dir="build" />
+        <delete dir="dist" />
+    </target>
+
+    <target name="init">
+        <mkdir dir="build/classes"/>
+        <mkdir dir="dist" />
+    </target>
+
+    <target name="compile" depends="init" >
+        <javac destdir="build/classes" srcdir="src" includeantruntime="false"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="dist\tebbe_caleb_ASG2.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="cs455.scaling.server.Server" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="server" depends="jar">
+        <java classname="cs455.scaling.server.Server" fork="true">
+            <classpath path="dist\tebbe_caleb_ASG2.jar" />
+            <arg value="${arg0}"/>
+            <!-- <arg value="${arg0}"/> -->
+        </java>
+    </target>
+
+    <target name="client" depends="jar">
+        <java classname="cs455.scaling.client.Client" fork="true">
+            <classpath path="dist\tebbe_caleb_ASG2.jar" />
+            <arg value="${arg0}"/>
+            <arg value="${arg1}"/>
+        </java>
+    </target>
+</project>

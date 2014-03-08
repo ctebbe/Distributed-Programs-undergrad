@@ -5,28 +5,27 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by crt on 2/18/14.
  */
-public class PoolThread extends Thread {
+public class PoolThread implements Runnable {
 
-    private BlockingQueue<Task> taskQueue = null;
-    private boolean isDone = false;
-
+    private BlockingQueue<Task> taskQueue = null;   // an instance of our pool-queue to pull tasks from
 
     public PoolThread(BlockingQueue<Task> taskQueue) {
         this.taskQueue = taskQueue;
     }
 
     public void run() {
-        try {
+        //while(!Thread.currentThread().isInterrupted()) {
+                /*
+            try {
 
-            while(!isDone()) taskQueue.take().run(); // take() waits until a task becomes available
+                Task task = taskQueue.take();
+                task.execute();
 
-        } catch (InterruptedException ie) { ie.printStackTrace(); }
+            } catch (InterruptedException ie) { 
+                Thread.currentThread().interrupt();
+                return;
+            }
+                */
+        //}
     }
-
-    public synchronized void killThread() {
-        this.isDone = true;
-        this.interrupt(); // break out of dequeue
-    }
-
-    private synchronized boolean isDone() { return this.isDone; }
 }

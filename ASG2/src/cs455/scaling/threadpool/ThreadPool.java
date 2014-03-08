@@ -1,5 +1,9 @@
 package cs455.scaling.threadpool;
 
+import cs455.scaling.threadpool.testtasks.AddTask;
+import cs455.scaling.threadpool.testtasks.MultiplyTask;
+import cs455.scaling.threadpool.testtasks.SleepTask;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -10,41 +14,44 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class ThreadPool {
 
-    private BlockingQueue<Task> taskQueue = new LinkedBlockingQueue<Task>(); // holds tasks to be completed
-    private List<PoolThread> threadPool = new ArrayList<PoolThread>(); // holds all our working threads
+    private BlockingQueue<Task> taskQueue   = new LinkedBlockingQueue<Task>(); // holds tasks to be completed
+    private List<PoolThread> threadPool     = new ArrayList<PoolThread>(); // holds all our working threads
 
     public ThreadPool(int numThreads) {
         for(int i=0; i < numThreads; i++) // init all the objects in our pool
             threadPool.add(new PoolThread(taskQueue));
+    }
+
+    public ThreadPool initialize() {
         for(PoolThread thread : threadPool) // start up our thread pool
-            thread.start();
+            (new Thread(thread)).start();
+        return this;
     }
 
     // queues a task to the tail to be executed
-    public synchronized void addTaskToExecute(Task task) throws InterruptedException {
+    public void addTaskToExecute(Task task) throws InterruptedException {
         this.taskQueue.put(task); // add a task to end of the queue
-    }
 
-    // spins down all threads in the current thread pool
-    public synchronized void killPool() {
-        for(PoolThread thread : threadPool)
-            thread.killThread();
+        //this.taskQueue.take().execute();
     }
 
     /* *** MAIN *** */
     public static void main(String[] args) {
-        ThreadPool pool = new ThreadPool(3);
+        ThreadPool pool = new ThreadPool(10).initialize();
         try {
-            for(int i=0; i < 300; i++) {
-                pool.addTaskToExecute(new AddTask(0, 1)); pool.addTaskToExecute(new MultiplyTask(0, 1));
-                pool.addTaskToExecute(new SleepTask()); pool.addTaskToExecute(new MultiplyTask(0, 1));
-                pool.addTaskToExecute(new SleepTask()); pool.addTaskToExecute(new MultiplyTask(0, 1));
-                pool.addTaskToExecute(new SleepTask()); pool.addTaskToExecute(new AddTask(0, 2));
-                pool.addTaskToExecute(new MultiplyTask(0, 1)); pool.addTaskToExecute(new SleepTask());
-
+            for(int i=0; i < 1000000; i++) {
+                pool.addTaskToExecute(new AddTask(0, 1, i));
+                pool.addTaskToExecute(new MultiplyTask(0, 1, i));
+                pool.addTaskToExecute(new SleepTask(i));
+                pool.addTaskToExecute(new MultiplyTask(0, 1, i));
+                pool.addTaskToExecute(new SleepTask(i));
+                pool.addTaskToExecute(new MultiplyTask(0, 1,i));
+                pool.addTaskToExecute(new SleepTask(i));
+                pool.addTaskToExecute(new AddTask(0, 2,i));
+                pool.addTaskToExecute(new MultiplyTask(0, 1,i));
+                pool.addTaskToExecute(new SleepTask(i));
             }
 
         } catch (InterruptedException e) { e.printStackTrace(); }
-        //pool.killPool();
     }
 }
