@@ -68,6 +68,8 @@ public class Client implements Runnable {
                         key.interestOps(SelectionKey.OP_READ);
 
                         // start up our sending task to spam the server
+                        Thread.sleep(500);
+                        System.out.println("Connected to server?:" + currentChannel.isConnected());
                         new Thread(new ClientSender(currentChannel, this.sentDataHashList, this.sendRate)).start();
 
                     } else if(key.isReadable()) { // read a hash from the server and remove it from the data hash list
@@ -83,8 +85,9 @@ public class Client implements Runnable {
                 }
             }
         }
-        catch (IOException e) { e.printStackTrace(); }
+        catch (IOException e) { System.out.println("Lost connection to server"); }
         catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
     }
 
     private static String readHashFromSocketChannel(SocketChannel socketChannel)

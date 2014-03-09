@@ -14,18 +14,15 @@ public class PoolThread implements Runnable {
     }
 
     public void run() {
-        //while(!Thread.currentThread().isInterrupted()) {
-                /*
+        while(!Thread.currentThread().isInterrupted()) {
             try {
 
-                Task task = taskQueue.take();
-                task.execute();
+                (taskQueue.take()).execute();
 
             } catch (InterruptedException ie) { 
                 Thread.currentThread().interrupt();
                 return;
             }
-                */
-        //}
+        }
     }
 }

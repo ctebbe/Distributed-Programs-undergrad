@@ -1,5 +1,7 @@
 package cs455.scaling.threadpool;
 
+import cs455.scaling.server.ClientInfo;
+
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -12,10 +14,10 @@ import java.nio.channels.SocketChannel;
 public class AcceptTask implements Task {
 
     private Selector selector           = null; // the selector which to register
-    private SelectionKey selectionKey   = null; // key associated with client interested in connecting
+    private SocketChannel socketChannel   = null; // key associated with client interested in connecting
 
-    public AcceptTask(SelectionKey selectionKey, Selector selector) {
-        this.selectionKey = selectionKey;
+    public AcceptTask(SocketChannel channel, Selector selector) {
+        this.socketChannel = channel;
         this.selector = selector;
     }
 
@@ -23,18 +25,11 @@ public class AcceptTask implements Task {
     public void execute() {
         try {
 
-            ServerSocketChannel serverSocketChannel = (ServerSocketChannel) this.selectionKey.channel();
-            //System.out.println("serverSocketChannel:"+serverSocketChannel.toString());
-
-            // accept connection and turn blocking off
-            SocketChannel channel  = serverSocketChannel.accept();
-            if(channel != null) {
-                channel.configureBlocking(false);
-
-                System.out.println("accepted connection:"+channel.toString());
+            if(socketChannel != null) {
+                socketChannel.configureBlocking(false);
 
                 // register the channel with our selector and wait for data
-                channel.register(this.selector, SelectionKey.OP_READ);
+                socketChannel.register(this.selector, SelectionKey.OP_READ); //, new ClientInfo(serverSocketChannel));
             }
         }
         catch (IOException e) { e.printStackTrace(); }

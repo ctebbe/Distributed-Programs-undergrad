@@ -30,10 +30,10 @@ public class ThreadPool {
 
     // queues a task to the tail to be executed
     public void addTaskToExecute(Task task) throws InterruptedException {
-        System.out.println("adding to thread pool...");
+        //System.out.println("adding to thread pool...");
         this.taskQueue.put(task); // add a task to end of the queue
 
-        this.taskQueue.take().execute();
+        //this.taskQueue.take().execute();
     }
 
     /* *** MAIN *** */

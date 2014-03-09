@@ -16,6 +16,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -59,39 +60,37 @@ public class Server implements Runnable {
         while(true) {
             try {
                 this.selector.select(); // get an event from a registered channel
-                for(SelectionKey key : this.selector.selectedKeys()) {
+                //for(SelectionKey key : this.selector.selectedKeys()) {
+                Iterator selectedKeys = this.selector.selectedKeys().iterator();
+                while(selectedKeys.hasNext()) {
+                    SelectionKey key = (SelectionKey) selectedKeys.next();
+                    selectedKeys.remove();
+
                     if(!key.isValid()) continue;
 
                     //System.out.println("handling key from:"+key.channel().toString());
 
-                    this.selector.selectedKeys().remove(key);
+                    //this.selector.selectedKeys().remove(key);
 
                     // handle the event for this key
-                    /*
-                    if(key.isAcceptable())
-                        ((new AcceptTask(key, this.selector))).execute();
-                    else if(key.isReadable()) {
-                        (new ReadTask(key)).execute();
-                    }
-                    */
                     if(key.isAcceptable()) {
-                        ClientInfo clientInfo = new ClientInfo((ServerSocketChannel) key.channel());
+                        ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
+                        SocketChannel channel  = serverSocketChannel.accept();
 
-                        System.out.println("new accept key");
-                        System.out.println(clientList.contains(clientInfo));
-
-                        // dont let the key for a client get in twice or hell breaks loose
-                        if(clientList.contains(clientInfo)) {
-                            //key.cancel();
-                            //System.out.println("canceled key");
-                            continue;
+                        if(channel != null) {
+                            ClientInfo clientInfo = new ClientInfo(channel);
+                            if(clientList.contains(clientInfo)) {
+                                System.out.println("Already accepting...");
+                            } else {
+                                clientList.add(clientInfo);
+                                new AcceptTask(channel, this.selector).execute();
+                                //threadPool.addTaskToExecute(new AcceptTask(channel, this.selector));
+                            }
                         }
-                        clientList.add(clientInfo);
-
-                        threadPool.addTaskToExecute((new AcceptTask(key, this.selector)));
 
                     } else if(key.isReadable()) {
-                        threadPool.addTaskToExecute(new ReadTask(key));
+                        //System.out.println("readable key");
+                        threadPool.addTaskToExecute(new ReadTask((SocketChannel) key.channel(), this.selector));
                     }
                 }
             }

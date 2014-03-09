@@ -5,6 +5,7 @@ import cs455.scaling.util.Util;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.security.NoSuchAlgorithmException;
 
@@ -13,36 +14,40 @@ import java.security.NoSuchAlgorithmException;
  */
 public class ReadTask implements Task {
 
-    private SelectionKey selectionKey = null;
+    private SocketChannel socketChannel = null;
+    private Selector selector = null;
 
-    public ReadTask(SelectionKey selectionKey) {
-        this.selectionKey = selectionKey;
+    public ReadTask(SocketChannel socketChannel, Selector selector) {
+        this.socketChannel = socketChannel;
+        this.selector = selector;
     }
 
     @Override
     public void execute() {
         try {
-            Thread.sleep(1); // wait for data to be written to the channel
+            Thread.sleep(2); // wait for data to be written to the channel
 
             // read
-            SocketChannel socketChannel = ((SocketChannel) this.selectionKey.channel());
-            String hash = readHashFromSocketChannel(this.selectionKey);
+            String hash = readHashFromSocketChannel(this.socketChannel);
+            //socketChannel.register(this.selector, SelectionKey.OP_WRITE);
 
-            //System.out.println(hash);
+            if(hash == null) return;
+
+            System.out.println(hash);
 
             // write
             ByteBuffer sendBuffer = Util.ByteBufferFromString(hash);
             socketChannel.write(sendBuffer);
+            //socketChannel.register(this.selector, SelectionKey.OP_READ);
         }
         catch (IOException e) { System.out.println("Socket channel to client closed."); }
         catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
         catch (InterruptedException e) { e.printStackTrace(); }
     }
 
-    public String readHashFromSocketChannel(SelectionKey key)
+    public String readHashFromSocketChannel(SocketChannel socketChannel)
             throws IOException, NoSuchAlgorithmException {
 
-        SocketChannel socketChannel = (SocketChannel) key.channel();
         ByteBuffer readBuffer = ByteBuffer.allocate(Util.BYTE_BUFFER_SIZE);
         readBuffer.clear();
         byte[] readBytes = new byte[Util.BYTE_BUFFER_SIZE];
@@ -51,9 +56,9 @@ public class ReadTask implements Task {
         System.out.println("bytes read:"+readBytesSize);
         if (readBytesSize == -1) { // handle client closed
             socketChannel.close();
-            key.cancel();
+            //key.cancel();
             return "Connection ended";
-        }
+        } else if(readBytesSize == 0) return null;
 
         readBuffer.rewind();
         readBuffer.get(readBytes);

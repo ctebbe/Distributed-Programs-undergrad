@@ -11,7 +11,7 @@ gnome-terminal -x bash -c "ant -Darg0=${PORT} server; bash"
 sleep 2 # allow the registry time to spin up
 
 # messaging node start-up
-for i in `cat machines_10`
+for i in `cat machines_5`
 do
     echo 'sshing into '${i}
     #gnome-terminal -x bash -c "ssh -t ${i} 'echo 'hello world!'; bash'" &

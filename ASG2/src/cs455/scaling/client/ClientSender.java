@@ -36,7 +36,7 @@ public class ClientSender implements Runnable {
 
                 ByteBuffer buffer = generateRandomByteBuffer();
                 String bufferHash = Util.SHA1FromByteBuffer(buffer);
-                //System.out.println(bufferHash);
+                System.out.println(bufferHash);
 
                 synchronized (this.sentDataHashes) {
                     this.sentDataHashes.add(bufferHash);
@@ -53,7 +53,7 @@ public class ClientSender implements Runnable {
                 */
                 serverChannel.write(buffer);
             }
-            catch (IOException e)               { e.printStackTrace(); }
+            catch (IOException e)               { break; }
             catch (NoSuchAlgorithmException e)  { e.printStackTrace(); }
             catch (InterruptedException e)      { e.printStackTrace(); }
         }
