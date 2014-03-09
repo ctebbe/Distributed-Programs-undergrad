@@ -42,7 +42,8 @@ public class Server implements Runnable {
 
     // opens our selector on the specified host/port
     private Selector initializeSelector() throws IOException {
-        Selector socketSelector = SelectorProvider.provider().openSelector();
+        //Selector socketSelector = SelectorProvider.provider().openSelector();
+        Selector socketSelector = Selector.open();
 
         // create non-blocking channel and bind it to our host and port
         this.serverChannel = ServerSocketChannel.open();
@@ -59,9 +60,10 @@ public class Server implements Runnable {
     public void run() { // accept connections and send incoming reads to our threadpool to handle
         while(true) {
             try {
+
                 this.selector.select(); // get an event from a registered channel
-                //for(SelectionKey key : this.selector.selectedKeys()) {
                 Iterator selectedKeys = this.selector.selectedKeys().iterator();
+
                 while(selectedKeys.hasNext()) {
                     SelectionKey key = (SelectionKey) selectedKeys.next();
                     selectedKeys.remove();
@@ -69,8 +71,6 @@ public class Server implements Runnable {
                     if(!key.isValid()) continue;
 
                     //System.out.println("handling key from:"+key.channel().toString());
-
-                    //this.selector.selectedKeys().remove(key);
 
                     // handle the event for this key
                     if(key.isAcceptable()) {
