@@ -29,7 +29,6 @@ public class ReadTask implements Task {
 
             // read
             String hash = readHashFromSocketChannel(this.socketChannel);
-            //socketChannel.register(this.selector, SelectionKey.OP_WRITE);
 
             if(hash == null) return;
 
@@ -38,7 +37,6 @@ public class ReadTask implements Task {
             // write
             ByteBuffer sendBuffer = Util.ByteBufferFromString(hash);
             socketChannel.write(sendBuffer);
-            //socketChannel.register(this.selector, SelectionKey.OP_READ);
         }
         catch (IOException e) { System.out.println("Socket channel to client closed."); }
         catch (NoSuchAlgorithmException e) { e.printStackTrace(); }
@@ -53,7 +51,7 @@ public class ReadTask implements Task {
         byte[] readBytes = new byte[Util.BYTE_BUFFER_SIZE];
 
         int readBytesSize = socketChannel.read(readBuffer);
-        System.out.println("bytes read:"+readBytesSize);
+        //System.out.println("bytes read:"+readBytesSize);
         if (readBytesSize == -1) { // handle client closed
             socketChannel.close();
             //key.cancel();

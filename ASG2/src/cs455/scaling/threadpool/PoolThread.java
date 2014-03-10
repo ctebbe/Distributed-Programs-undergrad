@@ -19,7 +19,8 @@ public class PoolThread implements Runnable {
 
                 (taskQueue.take()).execute();
 
-            } catch (InterruptedException ie) { 
+            } catch (InterruptedException ie) {
+                System.out.println("Thread from pool interrupted...");
                 Thread.currentThread().interrupt();
                 return;
             }

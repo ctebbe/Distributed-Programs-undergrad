@@ -29,8 +29,8 @@ public class ClientSender implements Runnable {
 
     @Override
     public void run() {
-        //while(!Thread.interrupted()) {
-        for(int i=0; i < 100; i++) {
+        while(!Thread.interrupted()) {
+        //for(int i=0; i < 100; i++) {
             try {
                 Thread.sleep(1000 / this.sendRate); // ensure we are sending at given rate
 

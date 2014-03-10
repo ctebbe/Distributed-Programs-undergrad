@@ -27,9 +27,8 @@ public class AcceptTask implements Task {
 
             if(socketChannel != null) {
                 socketChannel.configureBlocking(false);
-
-                // register the channel with our selector and wait for data
                 socketChannel.register(this.selector, SelectionKey.OP_READ); //, new ClientInfo(serverSocketChannel));
+                System.out.println("Accepted client:"+socketChannel.toString());
             }
         }
         catch (IOException e) { e.printStackTrace(); }

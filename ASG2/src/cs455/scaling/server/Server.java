@@ -2,6 +2,7 @@ package cs455.scaling.server;
 
 import cs455.scaling.threadpool.AcceptTask;
 import cs455.scaling.threadpool.ReadTask;
+import cs455.scaling.threadpool.Task;
 import cs455.scaling.threadpool.ThreadPool;
 import cs455.scaling.util.Util;
 
@@ -36,13 +37,12 @@ public class Server implements Runnable {
         this.hostAddress = host;
         this.port = port;
         this.selector = this.initializeSelector();
-        this.threadPool = new ThreadPool(3).initialize();
+        this.threadPool = (new ThreadPool(10)).initialize();
         this.clientList = new ArrayList<ClientInfo>();
     }
 
     // opens our selector on the specified host/port
     private Selector initializeSelector() throws IOException {
-        //Selector socketSelector = SelectorProvider.provider().openSelector();
         Selector socketSelector = Selector.open();
 
         // create non-blocking channel and bind it to our host and port
@@ -51,8 +51,8 @@ public class Server implements Runnable {
         serverChannel.socket().bind(new InetSocketAddress(getHost(), getPort()));
 
         // invite connections
-        SelectionKey selectionKey = serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
-        System.out.println("Server information:" + selectionKey.channel().toString());
+        serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
+        System.out.println("Server information:" + serverChannel.toString());
         return socketSelector;
     }
 
@@ -62,12 +62,12 @@ public class Server implements Runnable {
             try {
 
                 this.selector.select(); // get an event from a registered channel
-                Iterator selectedKeys = this.selector.selectedKeys().iterator();
 
+                Iterator selectedKeys = this.selector.selectedKeys().iterator();
                 while(selectedKeys.hasNext()) {
+
                     SelectionKey key = (SelectionKey) selectedKeys.next();
                     selectedKeys.remove();
-
                     if(!key.isValid()) continue;
 
                     //System.out.println("handling key from:"+key.channel().toString());
@@ -83,7 +83,8 @@ public class Server implements Runnable {
                                 System.out.println("Already accepting...");
                             } else {
                                 clientList.add(clientInfo);
-                                new AcceptTask(channel, this.selector).execute();
+                                threadPool.addTaskToExecute(new AcceptTask(channel, this.selector));
+                                //task.execute();
                                 //threadPool.addTaskToExecute(new AcceptTask(channel, this.selector));
                             }
                         }
